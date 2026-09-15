@@ -1,3415 +1,2278 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="color-scheme" content="dark">
-
-<title>SourceGrab — Website Source Extractor</title>
-
-<style>
-:root{
-  --bg:#07080c;
-  --surface:#10121a;
-  --surface2:#151824;
-  --border:#e8eaf0;
-  --text:#eef0f5;
-  --muted:#8c93a5;
-  --green:#39ff14;
-  --blue:#39bfff;
-  --red:#ff5266;
-  --yellow:#ffd43b;
-  --radius:14px;
-}
-
-*{
-  box-sizing:border-box;
-}
-
-html{
-  scroll-behavior:smooth;
-}
-
-body{
-  margin:0;
-  min-height:100vh;
-  background:var(--bg);
-  color:var(--text);
-  font-family:
-    "JetBrains Mono",
-    "Cascadia Code",
-    Consolas,
-    monospace;
-
-  background-image:
-    linear-gradient(rgba(57,255,20,.035) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(57,255,20,.035) 1px,transparent 1px);
-
-  background-size:32px 32px;
-}
-
-button,
-input,
-select{
-  font:inherit;
-}
-
-button{
-  -webkit-tap-highlight-color:transparent;
-}
-
-.nav{
-  position:sticky;
-  top:0;
-  z-index:1000;
-
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  gap:15px;
-  padding:15px 28px;
-
-  border-bottom:3px solid var(--border);
-
-  background:rgba(16,18,26,.94);
-  backdrop-filter:blur(12px);
-}
-
-.logo{
-  font-size:22px;
-  font-weight:900;
-  letter-spacing:-1px;
-}
-
-.logo span{
-  color:var(--green);
-}
-
-.stats{
-  display:flex;
-  gap:8px;
-}
-
-.stat{
-  border:2px solid var(--border);
-  border-radius:999px;
-  padding:5px 12px;
-  background:#0b0d13;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:800;
-}
-
-.stat b{
-  color:var(--green);
-  font-size:12px;
-}
-
-main{
-  width:min(1100px,100%);
-  margin:auto;
-  padding:65px 22px 90px;
-}
-
-.hero{
-  text-align:center;
-  margin-bottom:42px;
-}
-
-.hero h1{
-  margin:0 0 15px;
-  font-size:clamp(34px,6vw,54px);
-  line-height:1.05;
-  letter-spacing:-2px;
-}
-
-.hero h1 span{
-  color:var(--green);
-}
-
-.hero p{
-  width:min(680px,100%);
-  margin:auto;
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.7;
-}
-
-.card{
-  border:3px solid var(--border);
-  border-radius:var(--radius);
-  background:var(--surface);
-  box-shadow:6px 6px 0 var(--green);
-}
-
-.grabber{
-  padding:25px;
-}
-
-.form{
-  display:flex;
-  gap:10px;
-}
-
-.input{
-  flex:1;
-  min-width:0;
-  height:52px;
-
-  padding:0 16px;
-
-  border:2px solid var(--border);
-  border-radius:9px;
-
-  outline:none;
-
-  background:#0b0d13;
-  color:var(--text);
-}
-
-.input:focus{
-  border-color:var(--blue);
-  box-shadow:4px 4px 0 var(--blue);
-}
-
-.input::placeholder{
-  color:#5f6572;
-}
-
-.main-btn{
-  height:52px;
-
-  padding:0 25px;
-
-  border:3px solid var(--border);
-  border-radius:10px;
-
-  background:var(--green);
-  color:#050608;
-
-  font-weight:900;
-
-  cursor:pointer;
-
-  box-shadow:6px 6px 0 var(--border);
-
-  transition:
-    transform .12s,
-    box-shadow .12s;
-}
-
-.main-btn:hover{
-  transform:translate(2px,2px);
-  box-shadow:4px 4px 0 var(--border);
-}
-
-.main-btn:active{
-  transform:translate(6px,6px);
-  box-shadow:0 0 0 var(--border);
-}
-
-.main-btn:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-.settings{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:18px;
-}
-
-.field label{
-  display:block;
-  margin-bottom:7px;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:800;
-}
-
-.field input,
-.field select{
-  width:100%;
-  height:40px;
-
-  padding:0 10px;
-
-  border:2px solid #676d7b;
-  border-radius:7px;
-
-  background:#0b0d13;
-  color:var(--text);
-
-  outline:none;
-
-  font-size:11px;
-}
-
-.field input:focus,
-.field select:focus{
-  border-color:var(--blue);
-}
-
-.hint{
-  margin-top:6px;
-  color:#626978;
-  font-size:9px;
-}
-
-.status{
-  min-height:23px;
-  margin-top:17px;
-
-  color:var(--muted);
-
-  font-size:11px;
-  line-height:1.6;
-
-  white-space:pre-wrap;
-}
-
-.status.ok{
-  color:var(--green);
-}
-
-.status.error{
-  color:var(--red);
-}
-
-.status.warn{
-  color:var(--yellow);
-}
-
-.progress-wrap{
-  display:none;
-  margin-top:13px;
-}
-
-.progress{
-  height:8px;
-
-  overflow:hidden;
-
-  border:1px solid #454b58;
-  border-radius:99px;
-
-  background:#090b10;
-}
-
-.progress-bar{
-  width:0;
-  height:100%;
-  background:var(--green);
-  transition:width .2s;
-}
-
-.proxy-test{
-  margin-top:18px;
-  padding-top:15px;
-  border-top:1px solid #292d38;
-}
-
-.small-btn{
-  border:2px solid var(--border);
-  border-radius:7px;
-
-  padding:7px 11px;
-
-  background:#0b0d13;
-  color:var(--text);
-
-  font-size:10px;
-  font-weight:800;
-
-  cursor:pointer;
-}
-
-.small-btn:hover{
-  background:var(--green);
-  color:#050608;
-}
-
-.proxy-results{
-  display:grid;
-  gap:5px;
-  margin-top:10px;
-}
-
-.proxy-row{
-  display:flex;
-  justify-content:space-between;
-
-  padding:7px 9px;
-
-  border:1px solid #292d38;
-  border-radius:6px;
-
-  background:#0b0d13;
-
-  font-size:9px;
-}
-
-.proxy-ok{
-  color:var(--green);
-}
-
-.proxy-fail{
-  color:var(--red);
-}
-
-
-/* =========================================================
-   RESULT
-========================================================= */
-
-.result{
-  display:none;
-  margin-top:40px;
-}
-
-.summary{
-  margin:0 0 13px;
-
-  color:var(--muted);
-
-  font-size:11px;
-}
-
-.summary b{
-  color:var(--blue);
-}
-
-.tabs{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-}
-
-.tab{
-  border:2px solid var(--border);
-  border-bottom:0;
-
-  border-radius:9px 9px 0 0;
-
-  padding:10px 15px;
-
-  background:#0b0d13;
-  color:var(--muted);
-
-  cursor:pointer;
-
-  font-size:11px;
-  font-weight:900;
-}
-
-.tab.active{
-  background:var(--surface);
-  color:var(--text);
-}
-
-.tab span{
-  color:var(--blue);
-}
-
-.panel{
-  overflow:hidden;
-
-  border:3px solid var(--border);
-  border-radius:0 var(--radius) var(--radius) var(--radius);
-
-  background:var(--surface);
-
-  box-shadow:6px 6px 0 var(--blue);
-}
-
-.panel-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  gap:10px;
-
-  padding:11px 14px;
-
-  border-bottom:2px solid var(--border);
-}
-
-.panel-title{
-  overflow:hidden;
-
-  color:var(--muted);
-
-  font-size:10px;
-  font-weight:800;
-
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.actions{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-}
-
-#pageSelect{
-  max-width:230px;
-
-  padding:6px 8px;
-
-  border:2px solid var(--border);
-  border-radius:7px;
-
-  background:#0b0d13;
-  color:var(--text);
-
-  font-size:9px;
-}
-
-pre{
-  margin:0;
-
-  min-height:300px;
-  max-height:570px;
-
-  overflow:auto;
-
-  padding:18px;
-
-  color:#c9f7c5;
-
-  font-family:inherit;
-
-  font-size:11px;
-  line-height:1.65;
-
-  white-space:pre-wrap;
-  word-break:break-word;
-}
-
-pre.empty{
-  color:var(--muted);
-  font-style:italic;
-}
-
-
-/* =========================================================
-   PREVIEW
-========================================================= */
-
-.preview{
-  display:none;
-
-  margin-top:25px;
-
-  border:3px solid var(--border);
-  border-radius:var(--radius);
-
-  overflow:hidden;
-
-  background:#fff;
-
-  box-shadow:6px 6px 0 var(--green);
-}
-
-.preview-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  gap:10px;
-
-  padding:11px 14px;
-
-  border-bottom:3px solid var(--border);
-
-  background:var(--surface);
-}
-
-.preview-title{
-  color:var(--muted);
-  font-size:10px;
-  font-weight:900;
-}
-
-.preview iframe{
-  display:block;
-
-  width:100%;
-  height:650px;
-
-  border:0;
-
-  background:#fff;
-}
-
-.preview-note{
-  padding:8px 12px;
-
-  background:var(--surface);
-
-  color:var(--muted);
-
-  font-size:9px;
-}
-
-
-/* =========================================================
-   INFO
-========================================================= */
-
-.info-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-
-  gap:16px;
-
-  margin-top:55px;
-}
-
-.info{
-  padding:20px;
-}
-
-.number{
-  display:grid;
-
-  width:40px;
-  height:40px;
-
-  margin-bottom:13px;
-
-  place-items:center;
-
-  border:2px solid var(--border);
-  border-radius:9px;
-
-  background:var(--blue);
-  color:#050608;
-
-  font-weight:900;
-}
-
-.info h3{
-  margin:0 0 7px;
-  font-size:14px;
-}
-
-.info p{
-  margin:0;
-
-  color:var(--muted);
-
-  font-size:10px;
-  line-height:1.6;
-}
-
-.note{
-  width:min(850px,100%);
-
-  margin:42px auto 0;
-
-  color:#646b79;
-
-  font-size:9px;
-  line-height:1.7;
-
-  text-align:center;
-}
-
-footer{
-  padding:25px;
-
-  border-top:2px solid var(--border);
-
-  color:#646b79;
-
-  font-size:9px;
-
-  text-align:center;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media(max-width:700px){
-
-  .nav{
-    padding:13px 15px;
-  }
-
-  .stats{
-    display:none;
-  }
-
-  main{
-    padding:40px 14px 70px;
-  }
-
-  .hero{
-    margin-bottom:28px;
-  }
-
-  .hero h1{
-    letter-spacing:-1.5px;
-  }
-
-  .hero p{
-    font-size:11px;
-  }
-
-  .grabber{
-    padding:17px;
-  }
-
-  .form{
-    flex-direction:column;
-  }
-
-  .main-btn{
-    width:100%;
-  }
-
-  .settings{
-    grid-template-columns:1fr;
-  }
-
-  .info-grid{
-    grid-template-columns:1fr;
-  }
-
-  .panel-head{
-    align-items:stretch;
-    flex-direction:column;
-  }
-
-  .actions{
-    width:100%;
-  }
-
-  .actions .small-btn{
-    flex:1;
-  }
-
-  #pageSelect{
-    flex:1;
-    max-width:none;
-  }
-
-  .preview iframe{
-    height:600px;
-  }
-
-  pre{
-    max-height:480px;
-    font-size:9px;
-  }
-
-  .tab{
-    flex:1;
-    text-align:center;
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>SourceGrab — Website Source Viewer</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #050708;
+      --panel: #0b1012;
+      --panel-2: #0e1518;
+      --border: #1b2b2f;
+      --text: #e7f4f5;
+      --muted: #7c9297;
+      --green: #00ff9c;
+      --green-dark: #00b871;
+      --blue: #39a7ff;
+      --red: #ff4d67;
+      --yellow: #ffd166;
+      --shadow: 0 20px 60px rgba(0, 0, 0, .45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(0,255,156,.08), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(57,167,255,.08), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .container {
+      width: min(1250px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    header {
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(5,7,8,.78);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -.5px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #00140d;
+      background: linear-gradient(135deg, var(--green), #7affd0);
+      box-shadow: 0 0 35px rgba(0,255,156,.2);
+      font-weight: 1000;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    main {
+      padding: 55px 0 80px;
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 850px;
+      margin: 0 auto 40px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border: 1px solid rgba(0,255,156,.2);
+      background: rgba(0,255,156,.05);
+      border-radius: 999px;
+      color: var(--green);
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    h1 {
+      font-size: clamp(40px, 7vw, 78px);
+      line-height: .95;
+      letter-spacing: -4px;
+      margin-bottom: 20px;
+    }
+
+    h1 span {
+      color: var(--green);
+    }
+
+    .hero p {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(15,23,25,.94), rgba(8,13,15,.94));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .input-card {
+      padding: 22px;
+      margin-bottom: 25px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 150px auto;
+      gap: 12px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 54px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      background: #070b0d;
+      color: var(--text);
+      outline: none;
+      border-radius: 13px;
+      transition: .2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(0,255,156,.55);
+      box-shadow: 0 0 0 4px rgba(0,255,156,.06);
+    }
+
+    .btn {
+      border: 0;
+      min-height: 54px;
+      padding: 0 22px;
+      border-radius: 13px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      color: #00140d;
+      background: linear-gradient(135deg, var(--green), #7affd0);
+      box-shadow: 0 10px 30px rgba(0,255,156,.13);
+    }
+
+    .btn-secondary {
+      background: #111a1d;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-danger {
+      color: #fff;
+      background: rgba(255,77,103,.12);
+      border: 1px solid rgba(255,77,103,.25);
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: rgba(57,167,255,.06);
+      border: 1px solid rgba(57,167,255,.15);
+      color: #9ccfff;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      padding: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .stat-value {
+      font-size: 25px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .result {
+      overflow: hidden;
+    }
+
+    .result-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .result-title {
+      font-weight: 900;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-btn {
+      height: 38px;
+      padding: 0 13px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: #101719;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 15px 20px;
+      font-weight: 800;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab.active {
+      color: var(--green);
+      border-bottom-color: var(--green);
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .code-toolbar {
+      padding: 12px;
+      background: #070b0d;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .page-select {
+      max-width: 450px;
+      height: 40px;
+      font-size: 12px;
+    }
+
+    .code {
+      height: 560px;
+      overflow: auto;
+      background: #040607;
+    }
+
+    pre {
+      margin: 0;
+      padding: 22px;
+      min-height: 100%;
+      color: #d4e8e8;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      white-space: pre;
+      tab-size: 2;
+    }
+
+    .preview-wrap {
+      background: #fff;
+      min-height: 650px;
+      position: relative;
+    }
+
+    #previewFrame {
+      width: 100%;
+      height: 650px;
+      border: 0;
+      display: block;
+      background: white;
+    }
+
+    .empty {
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+      padding: 40px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .loading {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .progress {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #101719;
+    }
+
+    .progress span {
+      display: block;
+      width: 35%;
+      height: 100%;
+      background: var(--green);
+      animation: loading 1s infinite ease-in-out;
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-130%); }
+      100% { transform: translateX(400%); }
+    }
+
+    .status {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .error {
+      margin: 15px 20px;
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(255,77,103,.07);
+      border: 1px solid rgba(255,77,103,.2);
+      color: #ff9aaa;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .success {
+      margin: 15px 20px;
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(0,255,156,.06);
+      border: 1px solid rgba(0,255,156,.18);
+      color: #8fffd0;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    footer {
+      color: #52676b;
+      text-align: center;
+      font-size: 12px;
+      padding: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .input-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .result-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+
+      .code {
+        height: 480px;
+      }
+
+      #previewFrame {
+        height: 550px;
+      }
+    }
+
+    @media (max-width: 450px) {
+      .container {
+        width: min(100% - 20px, 1250px);
+      }
+
+      main {
+        padding-top: 35px;
+      }
+
+      .input-card {
+        padding: 14px;
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 14px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+      }
+
+      .code-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .page-select {
+        max-width: none;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<nav class="nav">
-
-  <div class="logo">
-    Source<span>Grab</span>
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      VISIT <b id="statVisits">0</b>
+<header>
+  <div class="container nav">
+    <div class="brand">
+      <div class="brand-logo">&lt;/&gt;</div>
+      <div>
+        SourceGrab
+        <small>Direct Website Source Viewer</small>
+      </div>
     </div>
-
-    <div class="stat">
-      DOMAIN <b id="statDomains">0</b>
-    </div>
-
   </div>
-
-</nav>
-
+</header>
 
 <main>
+  <div class="container">
 
-<section class="hero">
-
-  <h1>
-    Bongkar <span>Source Code</span><br>
-    Website
-  </h1>
-
-  <p>
-    Ambil source publik, lihat kode, preview hasilnya,
-    lalu download seluruh hasil sebagai ZIP.
-  </p>
-
-</section>
-
-
-<section class="card grabber">
-
-  <form id="grabForm" class="form">
-
-    <input
-      id="domainInput"
-      class="input"
-      type="text"
-      autocomplete="off"
-      spellcheck="false"
-      placeholder="https://example.com"
-      required
-    >
-
-    <button
-      id="grabBtn"
-      class="main-btn"
-      type="submit"
-    >
-      AMBIL KODE
-    </button>
-
-  </form>
-
-
-  <div class="settings">
-
-    <div class="field">
-
-      <label>MAKSIMAL HALAMAN</label>
-
-      <select id="maxPages">
-
-        <option value="1">
-          1 — Homepage
-        </option>
-
-        <option value="3">
-          3 halaman
-        </option>
-
-        <option value="5">
-          5 halaman
-        </option>
-
-        <option value="10" selected>
-          10 halaman
-        </option>
-
-        <option value="20">
-          20 halaman
-        </option>
-
-      </select>
-
-    </div>
-
-
-    <div class="field">
-
-      <label>PROXY KUSTOM</label>
-
-      <input
-        id="customProxy"
-        type="text"
-        autocomplete="off"
-        spellcheck="false"
-        placeholder="https://worker-kamu.workers.dev/?url="
-      >
-
-      <div class="hint">
-        Opsional. Proxy kustom akan digunakan terlebih dahulu.
+    <section class="hero">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        NO PUBLIC PROXY
       </div>
 
-    </div>
+      <h1>
+        Grab <span>Website</span><br>
+        Source Code
+      </h1>
 
-  </div>
+      <p>
+        Masukkan URL website untuk mencoba mengambil HTML, CSS dan JavaScript
+        secara langsung melalui browser.
+      </p>
+    </section>
 
+    <section class="card input-card">
 
-  <div
-    id="progressWrap"
-    class="progress-wrap"
-  >
+      <div class="input-row">
+        <input
+          id="urlInput"
+          type="url"
+          placeholder="https://example.com"
+          autocomplete="off"
+        >
 
-    <div class="progress">
+        <select id="maxPages">
+          <option value="1">1 halaman</option>
+          <option value="3">3 halaman</option>
+          <option value="5" selected>5 halaman</option>
+          <option value="10">10 halaman</option>
+          <option value="20">20 halaman</option>
+        </select>
 
-      <div
-        id="progressBar"
-        class="progress-bar"
-      ></div>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="status"
-    class="status"
-  ></div>
-
-
-  <div class="proxy-test">
-
-    <button
-      id="testProxyBtn"
-      class="small-btn"
-      type="button"
-    >
-      TES PROXY
-    </button>
-
-    <div
-      id="proxyResults"
-      class="proxy-results"
-    ></div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     CODE RESULT
-===================================================== -->
-
-<section
-  id="result"
-  class="result"
->
-
-  <p
-    id="pagesSummary"
-    class="summary"
-  ></p>
-
-
-  <div class="tabs">
-
-    <button
-      class="tab active"
-      data-tab="html"
-    >
-      HTML <span id="countHtml"></span>
-    </button>
-
-    <button
-      class="tab"
-      data-tab="css"
-    >
-      CSS <span id="countCss"></span>
-    </button>
-
-    <button
-      class="tab"
-      data-tab="js"
-    >
-      JS <span id="countJs"></span>
-    </button>
-
-  </div>
-
-
-  <div class="panel">
-
-    <div class="panel-head">
-
-      <div
-        id="panelTitle"
-        class="panel-title"
-      >
-        index.html
+        <button class="btn btn-primary" id="grabBtn">
+          Grab Source
+        </button>
       </div>
 
+      <div class="notice">
+        Mode ini <b>tidak menggunakan proxy publik</b>. Website target harus
+        mengizinkan request cross-origin (CORS). Website yang memblokir CORS
+        tidak dapat diambil langsung oleh browser.
+      </div>
 
-      <div class="actions">
+      <div class="loading" id="loading">
+        <div class="progress">
+          <span></span>
+        </div>
+        <div class="status" id="loadingStatus">
+          Menyiapkan crawler...
+        </div>
+      </div>
 
-        <select
-          id="pageSelect"
-          style="display:none"
-        ></select>
+    </section>
 
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-value" id="statPages">0</div>
+        <div class="stat-label">Pages</div>
+      </div>
 
-        <button
-          id="copyBtn"
-          class="small-btn"
-          type="button"
-        >
-          SALIN
+      <div class="stat">
+        <div class="stat-value" id="statHtml">0 KB</div>
+        <div class="stat-label">HTML</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-value" id="statCss">0 KB</div>
+        <div class="stat-label">CSS</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-value" id="statJs">0 KB</div>
+        <div class="stat-label">JavaScript</div>
+      </div>
+    </section>
+
+    <section class="card result">
+
+      <div class="result-head">
+        <div class="result-title">
+          Retrieved Source
+        </div>
+
+        <div class="result-actions">
+          <button class="mini-btn" id="copyBtn">
+            Copy
+          </button>
+
+          <button class="mini-btn" id="downloadBtn">
+            Download
+          </button>
+
+          <button class="mini-btn" id="zipBtn">
+            Download ZIP
+          </button>
+
+          <button class="mini-btn" id="refreshPreviewBtn">
+            Refresh Preview
+          </button>
+        </div>
+      </div>
+
+      <div id="messageArea"></div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="html">
+          HTML
         </button>
 
-
-        <button
-          id="downloadBtn"
-          class="small-btn"
-          type="button"
-        >
-          UNDUH FILE
+        <button class="tab" data-tab="css">
+          CSS
         </button>
 
-
-        <button
-          id="zipBtn"
-          class="small-btn"
-          type="button"
-        >
-          DOWNLOAD ZIP
+        <button class="tab" data-tab="js">
+          JavaScript
         </button>
+
+        <button class="tab" data-tab="preview">
+          Preview
+        </button>
+      </div>
+
+      <div class="panel active" id="panel-html">
+
+        <div class="code-toolbar">
+          <select class="page-select" id="htmlPageSelect">
+          </select>
+        </div>
+
+        <div class="code">
+          <pre id="htmlCode">Belum ada source.</pre>
+        </div>
 
       </div>
 
-    </div>
+      <div class="panel" id="panel-css">
 
+        <div class="code">
+          <pre id="cssCode">Belum ada CSS.</pre>
+        </div>
 
-    <pre id="codeOutput"></pre>
+      </div>
 
-  </div>
+      <div class="panel" id="panel-js">
 
-</section>
+        <div class="code">
+          <pre id="jsCode">Belum ada JavaScript.</pre>
+        </div>
 
+      </div>
 
-<!-- =====================================================
-     PREVIEW
-===================================================== -->
+      <div class="panel" id="panel-preview">
 
-<section
-  id="preview"
-  class="preview"
->
+        <div class="code-toolbar">
+          <select class="page-select" id="previewPageSelect">
+          </select>
 
-  <div class="preview-head">
+          <button class="mini-btn" id="openPreviewBtn">
+            Open Preview
+          </button>
+        </div>
 
-    <div class="preview-title">
-      LIVE PREVIEW
-    </div>
+        <div class="preview-wrap">
+          <iframe
+            id="previewFrame"
+            sandbox="allow-scripts allow-forms"
+            referrerpolicy="no-referrer"
+          ></iframe>
+        </div>
 
-    <div class="actions">
+      </div>
 
-      <button
-        id="refreshPreviewBtn"
-        class="small-btn"
-        type="button"
-      >
-        REFRESH
-      </button>
-
-      <button
-        id="openPreviewBtn"
-        class="small-btn"
-        type="button"
-      >
-        BUKA TAB
-      </button>
-
-    </div>
+    </section>
 
   </div>
-
-
-  <iframe
-    id="previewFrame"
-    sandbox="allow-scripts allow-forms allow-modals"
-    title="Website Preview"
-  ></iframe>
-
-
-  <div class="preview-note">
-    Preview dijalankan di sandbox browser. Resource server-side,
-    API private, PHP, database, dan asset yang tidak berhasil
-    diambil tidak akan tersedia.
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     INFO
-===================================================== -->
-
-<section class="info-grid">
-
-  <div class="card info">
-
-    <div class="number">
-      01
-    </div>
-
-    <h3>
-      VIEW CODE
-    </h3>
-
-    <p>
-      Lihat HTML setiap halaman serta gabungan CSS
-      dan JavaScript yang berhasil ditemukan.
-    </p>
-
-  </div>
-
-
-  <div class="card info">
-
-    <div class="number">
-      02
-    </div>
-
-    <h3>
-      LIVE PREVIEW
-    </h3>
-
-    <p>
-      HTML hasil ekstraksi dijalankan kembali di iframe
-      sandbox dengan CSS dan JavaScript yang berhasil diambil.
-    </p>
-
-  </div>
-
-
-  <div class="card info">
-
-    <div class="number">
-      03
-    </div>
-
-    <h3>
-      DOWNLOAD ZIP
-    </h3>
-
-    <p>
-      Seluruh halaman, CSS, dan JavaScript dikemas
-      menjadi satu file ZIP.
-    </p>
-
-  </div>
-
-</section>
-
-
-<p class="note">
-  SourceGrab hanya dapat memperoleh source yang dikirimkan
-  website kepada browser. Source server-side seperti PHP,
-  Node.js, database, environment variable, dan API private
-  tidak dapat diekstrak dari browser.
-</p>
-
 </main>
 
-
 <footer>
-  SourceGrab
+  SourceGrab — Direct browser fetching, tanpa public proxy.
 </footer>
-
-
-<!-- =====================================================
-     JSZIP
-===================================================== -->
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
 
 <script>
 "use strict";
 
+/*
+  ============================================================
+  STATE
+  ============================================================
+*/
 
-/* =========================================================
-   STORAGE
-========================================================= */
-
-const STORAGE = {
-  visits:"sg_v4_visits",
-  domains:"sg_v4_domains",
-  proxy:"sg_v4_custom_proxy"
+const state = {
+  pages: [],
+  css: "",
+  js: "",
+  cssMap: new Map(),
+  jsMap: new Map(),
+  visited: new Set(),
+  baseUrl: ""
 };
 
 
-function initStats(){
+/*
+  ============================================================
+  ELEMENTS
+  ============================================================
+*/
 
-  let visits =
-    Number(
-      localStorage.getItem(
-        STORAGE.visits
-      ) || 0
-    ) + 1;
+const $ = id => document.getElementById(id);
 
-  localStorage.setItem(
-    STORAGE.visits,
-    String(visits)
-  );
+const urlInput = $("urlInput");
+const maxPagesInput = $("maxPages");
+const grabBtn = $("grabBtn");
+const loading = $("loading");
+const loadingStatus = $("loadingStatus");
 
-  document.getElementById(
-    "statVisits"
-  ).textContent = visits;
+const htmlCode = $("htmlCode");
+const cssCode = $("cssCode");
+const jsCode = $("jsCode");
 
-  renderDomainCount();
-}
+const htmlPageSelect = $("htmlPageSelect");
+const previewPageSelect = $("previewPageSelect");
 
+const previewFrame = $("previewFrame");
 
-function renderDomainCount(){
+const messageArea = $("messageArea");
 
-  let domains=[];
 
-  try{
+/*
+  ============================================================
+  HELPERS
+  ============================================================
+*/
 
-    domains =
-      JSON.parse(
-        localStorage.getItem(
-          STORAGE.domains
-        ) || "[]"
-      );
+function normalizeUrl(input, base = null) {
+  try {
+    let url = base
+      ? new URL(input, base)
+      : new URL(input);
 
-  }catch{
-
-    domains=[];
-
-  }
-
-  document.getElementById(
-    "statDomains"
-  ).textContent =
-    domains.length;
-}
-
-
-function recordDomain(host){
-
-  let domains=[];
-
-  try{
-
-    domains =
-      JSON.parse(
-        localStorage.getItem(
-          STORAGE.domains
-        ) || "[]"
-      );
-
-  }catch{
-
-    domains=[];
-
-  }
-
-  if(!domains.includes(host)){
-    domains.push(host);
-  }
-
-  localStorage.setItem(
-    STORAGE.domains,
-    JSON.stringify(domains)
-  );
-
-  renderDomainCount();
-}
-
-
-initStats();
-
-
-/* =========================================================
-   DOM
-========================================================= */
-
-const form =
-  document.getElementById(
-    "grabForm"
-  );
-
-const input =
-  document.getElementById(
-    "domainInput"
-  );
-
-const maxPagesSel =
-  document.getElementById(
-    "maxPages"
-  );
-
-const customProxy =
-  document.getElementById(
-    "customProxy"
-  );
-
-const grabBtn =
-  document.getElementById(
-    "grabBtn"
-  );
-
-const statusEl =
-  document.getElementById(
-    "status"
-  );
-
-const result =
-  document.getElementById(
-    "result"
-  );
-
-const pagesSummary =
-  document.getElementById(
-    "pagesSummary"
-  );
-
-const progressWrap =
-  document.getElementById(
-    "progressWrap"
-  );
-
-const progressBar =
-  document.getElementById(
-    "progressBar"
-  );
-
-const codeOutput =
-  document.getElementById(
-    "codeOutput"
-  );
-
-const panelTitle =
-  document.getElementById(
-    "panelTitle"
-  );
-
-const pageSelect =
-  document.getElementById(
-    "pageSelect"
-  );
-
-const copyBtn =
-  document.getElementById(
-    "copyBtn"
-  );
-
-const downloadBtn =
-  document.getElementById(
-    "downloadBtn"
-  );
-
-const zipBtn =
-  document.getElementById(
-    "zipBtn"
-  );
-
-const preview =
-  document.getElementById(
-    "preview"
-  );
-
-const previewFrame =
-  document.getElementById(
-    "previewFrame"
-  );
-
-const refreshPreviewBtn =
-  document.getElementById(
-    "refreshPreviewBtn"
-  );
-
-const openPreviewBtn =
-  document.getElementById(
-    "openPreviewBtn"
-  );
-
-const testProxyBtn =
-  document.getElementById(
-    "testProxyBtn"
-  );
-
-const proxyResults =
-  document.getElementById(
-    "proxyResults"
-  );
-
-const tabs =
-  document.querySelectorAll(
-    ".tab"
-  );
-
-const countHtml =
-  document.getElementById(
-    "countHtml"
-  );
-
-const countCss =
-  document.getElementById(
-    "countCss"
-  );
-
-const countJs =
-  document.getElementById(
-    "countJs"
-  );
-
-
-/* =========================================================
-   PROXY
-========================================================= */
-
-const PUBLIC_PROXIES = [
-
-  {
-    name:"CorsProxy",
-
-    build:url =>
-      "https://corsproxy.io/?url=" +
-      encodeURIComponent(url)
-  },
-
-  {
-    name:"AllOrigins",
-
-    build:url =>
-      "https://api.allorigins.win/raw?url=" +
-      encodeURIComponent(url)
-  },
-
-  {
-    name:"AllOrigins GET",
-
-    build:url =>
-      "https://api.allorigins.win/get?url=" +
-      encodeURIComponent(url),
-
-    parse:text => {
-
-      try{
-
-        const data =
-          JSON.parse(text);
-
-        return data.contents || "";
-
-      }catch{
-
-        return "";
-
-      }
-
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return null;
     }
 
-  }
-
-];
-
-
-customProxy.value =
-  localStorage.getItem(
-    STORAGE.proxy
-  ) || "";
-
-
-customProxy.addEventListener(
-  "change",
-  () => {
-
-    localStorage.setItem(
-      STORAGE.proxy,
-      customProxy.value.trim()
-    );
-
-  }
-);
-
-
-function getProxies(){
-
-  const custom =
-    customProxy.value.trim();
-
-  const result=[];
-
-
-  if(custom){
-
-    result.push({
-
-      name:"Custom Proxy",
-
-      build:url => {
-
-        if(custom.includes("{url}")){
-
-          return custom.replace(
-            "{url}",
-            encodeURIComponent(url)
-          );
-
-        }
-
-        if(
-          custom.includes("?url=") ||
-          custom.endsWith("url=")
-        ){
-
-          return (
-            custom +
-            encodeURIComponent(url)
-          );
-
-        }
-
-        if(custom.includes("?")){
-
-          return (
-            custom +
-            "&url=" +
-            encodeURIComponent(url)
-          );
-
-        }
-
-        return (
-          custom +
-          "?url=" +
-          encodeURIComponent(url)
-        );
-
-      }
-
-    });
-
-  }
-
-
-  return [
-    ...result,
-    ...PUBLIC_PROXIES
-  ];
-}
-
-
-/* =========================================================
-   FETCH
-========================================================= */
-
-function sleep(ms){
-
-  return new Promise(
-    resolve => setTimeout(
-      resolve,
-      ms
-    )
-  );
-
-}
-
-
-async function fetchWithTimeout(
-  url,
-  timeout=16000
-){
-
-  const controller =
-    new AbortController();
-
-  const timer =
-    setTimeout(
-      () => controller.abort(),
-      timeout
-    );
-
-
-  try{
-
-    return await fetch(
-      url,
-      {
-        method:"GET",
-        cache:"no-store",
-        redirect:"follow",
-        signal:controller.signal
-      }
-    );
-
-  }finally{
-
-    clearTimeout(timer);
-
-  }
-
-}
-
-
-async function fetchViaProxy(
-  target,
-  timeout=16000
-){
-
-  const errors=[];
-
-
-  for(
-    const proxy of getProxies()
-  ){
-
-    try{
-
-      const response =
-        await fetchWithTimeout(
-          proxy.build(target),
-          timeout
-        );
-
-
-      if(!response.ok){
-
-        errors.push(
-          `${proxy.name}: HTTP ${response.status}`
-        );
-
-        continue;
-      }
-
-
-      let text =
-        await response.text();
-
-
-      if(proxy.parse){
-        text =
-          proxy.parse(text);
-      }
-
-
-      if(
-        typeof text !== "string" ||
-        !text.trim()
-      ){
-
-        errors.push(
-          `${proxy.name}: kosong`
-        );
-
-        continue;
-      }
-
-
-      return {
-        text,
-        proxy:proxy.name
-      };
-
-
-    }catch(error){
-
-      errors.push(
-        `${proxy.name}: ${
-          error?.name === "AbortError"
-            ? "timeout"
-            : error?.message || "network error"
-        }`
-      );
-
-    }
-
-
-    await sleep(250);
-
-  }
-
-
-  throw new Error(
-    errors.join("\n")
-  );
-
-}
-
-
-/* =========================================================
-   URL
-========================================================= */
-
-function normalizeUrl(value){
-
-  let raw =
-    value.trim();
-
-  if(!raw){
-    return null;
-  }
-
-  if(!/^https?:\/\//i.test(raw)){
-    raw =
-      "https://" + raw;
-  }
-
-
-  try{
-
-    const url =
-      new URL(raw);
-
-    url.hash="";
+    url.hash = "";
 
     return url.href;
-
-  }catch{
-
+  } catch {
     return null;
-
   }
-
 }
 
 
-function cleanUrl(url){
-
-  try{
-
-    const u =
-      new URL(url);
-
-    u.hash="";
-
-    return u.href;
-
-  }catch{
-
-    return url;
-
-  }
-
-}
-
-
-function resolveUrl(
-  href,
-  base
-){
-
-  try{
-
-    const u =
-      new URL(href,base);
-
-    u.hash="";
-
-    return u.href;
-
-  }catch{
-
-    return null;
-
-  }
-
-}
-
-
-function pathLabel(url){
-
-  try{
-
-    const u =
-      new URL(url);
-
-    return (
-      u.pathname === "/"
-        ? "/ (home)"
-        : u.pathname
-    ) + u.search;
-
-  }catch{
-
-    return url;
-
-  }
-
-}
-
-
-function sameOrigin(
-  url,
-  origin
-){
-
-  try{
-
-    return (
-      new URL(url).origin ===
-      origin
-    );
-
-  }catch{
-
+function isSameOrigin(url, origin) {
+  try {
+    return new URL(url).origin === new URL(origin).origin;
+  } catch {
     return false;
-
   }
-
 }
 
 
-function isHttp(url){
+function formatBytes(bytes) {
+  if (!bytes) return "0 KB";
 
-  try{
+  const kb = bytes / 1024;
 
-    const protocol =
-      new URL(url).protocol;
-
-    return (
-      protocol === "http:" ||
-      protocol === "https:"
-    );
-
-  }catch{
-
-    return false;
-
+  if (kb < 1024) {
+    return kb.toFixed(1) + " KB";
   }
 
+  return (kb / 1024).toFixed(2) + " MB";
 }
 
 
-function isHtmlPage(url){
-
-  try{
-
-    const path =
-      new URL(url)
-        .pathname
-        .toLowerCase();
-
-    return !(
-      /\.(pdf|zip|rar|7z|png|jpg|jpeg|gif|webp|svg|ico|mp3|mp4|webm|avi|mov|woff|woff2|ttf|otf|eot|css|js|json|xml|txt|csv)$/i
-        .test(path)
-    );
-
-  }catch{
-
-    return false;
-
-  }
-
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 
-/* =========================================================
-   MAP LIMIT
-========================================================= */
-
-async function mapLimit(
-  items,
-  limit,
-  worker
-){
-
-  const results =
-    new Array(
-      items.length
-    );
-
-  let index=0;
+function escapeAttr(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 
-  async function runner(){
+function setLoading(active, text = "") {
+  loading.classList.toggle("active", active);
 
-    while(true){
-
-      const current =
-        index++;
-
-      if(
-        current >=
-        items.length
-      ){
-        return;
-      }
+  if (text) {
+    loadingStatus.textContent = text;
+  }
+}
 
 
-      try{
+function showMessage(type, html) {
+  messageArea.innerHTML = `
+    <div class="${type}">
+      ${html}
+    </div>
+  `;
+}
 
-        results[current] =
-          await worker(
-            items[current],
-            current
-          );
 
-      }catch{
+function clearMessage() {
+  messageArea.innerHTML = "";
+}
 
-        results[current]=null;
 
-      }
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
 
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+
+/*
+  ============================================================
+  DIRECT FETCH
+  ============================================================
+*/
+
+async function fetchDirect(url) {
+
+  const response = await fetch(url, {
+    method: "GET",
+    mode: "cors",
+    credentials: "omit",
+    redirect: "follow",
+    cache: "no-store",
+    headers: {
+      "Accept": "text/html,text/css,application/javascript,text/javascript,*/*"
     }
+  });
 
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status} ${response.statusText}`
+    );
   }
 
-
-  await Promise.all(
-    Array.from(
-      {
-        length:Math.min(
-          limit,
-          Math.max(
-            items.length,
-            1
-          )
-        )
-      },
-      runner
-    )
-  );
-
-
-  return results;
-
+  return await response.text();
 }
 
 
-/* =========================================================
-   CRAWLER
-========================================================= */
+/*
+  ============================================================
+  HTML PARSER
+  ============================================================
+*/
 
-async function crawlSite(
-  baseUrl,
-  maxPages,
-  onProgress
-){
+function parsePage(url, html) {
 
-  const origin =
-    new URL(baseUrl).origin;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
 
+  const inlineCss = [];
+  const inlineJs = [];
 
-  const queue=[
-    cleanUrl(baseUrl)
-  ];
+  const cssUrls = [];
+  const jsUrls = [];
+  const links = [];
 
+  /*
+    STYLE
+  */
 
-  const seen =
-    new Set(queue);
-
-
-  const pages=[];
-
-  const cssUrls =
-    new Set();
-
-  const jsUrls =
-    new Set();
-
-  const inlineCss=[];
-
-  const inlineJs=[];
-
-  const pageErrors=[];
-
-
-  for(
-    let index=0;
-    index<queue.length &&
-    pages.length<maxPages;
-    index++
-  ){
-
-    const pageUrl =
-      queue[index];
-
-
-    onProgress({
-      type:"page",
-      current:pages.length+1,
-      total:maxPages,
-      url:pageUrl
-    });
-
-
-    let html;
-
-
-    try{
-
-      const response =
-        await fetchViaProxy(
-          pageUrl,
-          18000
-        );
-
-      html =
-        response.text;
-
-    }catch(error){
-
-      pageErrors.push(
-        `${pathLabel(pageUrl)} → ${error.message}`
-      );
-
-      continue;
-
+  doc.querySelectorAll("style").forEach(style => {
+    if (style.textContent.trim()) {
+      inlineCss.push(style.textContent);
     }
-
-
-    if(
-      !/<(?:!doctype|html|head|body)\b/i
-        .test(html)
-    ){
-
-      pageErrors.push(
-        `${pathLabel(pageUrl)} → bukan HTML`
-      );
-
-      continue;
-
-    }
-
-
-    pages.push({
-      url:pageUrl,
-      html
-    });
-
-
-    const doc =
-      new DOMParser()
-        .parseFromString(
-          html,
-          "text/html"
-        );
-
-
-    /* CSS INLINE */
-
-    doc.querySelectorAll(
-      "style"
-    ).forEach(style => {
-
-      const content =
-        style.textContent?.trim();
-
-      if(content){
-
-        inlineCss.push(
-          `/* ${pathLabel(pageUrl)} */\n` +
-          content
-        );
-
-      }
-
-    });
-
-
-    /* CSS EXTERNAL */
-
-    doc.querySelectorAll(
-      'link[rel~="stylesheet"][href]'
-    ).forEach(link => {
-
-      const href =
-        link.getAttribute(
-          "href"
-        );
-
-      const absolute =
-        resolveUrl(
-          href,
-          pageUrl
-        );
-
-
-      if(
-        absolute &&
-        isHttp(absolute) &&
-        sameOrigin(
-          absolute,
-          origin
-        )
-      ){
-
-        cssUrls.add(
-          cleanUrl(absolute)
-        );
-
-      }
-
-    });
-
-
-    /* JS */
-
-    doc.querySelectorAll(
-      "script"
-    ).forEach(script => {
-
-      const src =
-        script.getAttribute(
-          "src"
-        );
-
-
-      if(src){
-
-        const absolute =
-          resolveUrl(
-            src,
-            pageUrl
-          );
-
-
-        if(
-          absolute &&
-          isHttp(absolute) &&
-          sameOrigin(
-            absolute,
-            origin
-          )
-        ){
-
-          jsUrls.add(
-            cleanUrl(absolute)
-          );
-
-        }
-
-      }else{
-
-        const content =
-          script.textContent?.trim();
-
-        if(content){
-
-          inlineJs.push(
-            `/* ${pathLabel(pageUrl)} */\n` +
-            content
-          );
-
-        }
-
-      }
-
-    });
-
-
-    /* INTERNAL LINKS */
-
-    doc.querySelectorAll(
-      "a[href]"
-    ).forEach(anchor => {
-
-      if(
-        queue.length >= maxPages
-      ){
-        return;
-      }
-
-
-      const href =
-        anchor.getAttribute(
-          "href"
-        );
-
-
-      if(!href){
-        return;
-      }
-
-
-      if(
-        href.startsWith("#") ||
-        /^(mailto:|tel:|javascript:|data:)/i
-          .test(href)
-      ){
-        return;
-      }
-
-
-      const absolute =
-        resolveUrl(
-          href,
-          pageUrl
-        );
-
-
-      if(!absolute){
-        return;
-      }
-
-
-      const clean =
-        cleanUrl(absolute);
-
-
-      if(
-        !sameOrigin(
-          clean,
-          origin
-        )
-      ){
-        return;
-      }
-
-
-      if(
-        !isHtmlPage(clean)
-      ){
-        return;
-      }
-
-
-      if(
-        seen.has(clean)
-      ){
-        return;
-      }
-
-
-      seen.add(clean);
-
-      queue.push(clean);
-
-    });
-
-
-    progressBar.style.width =
-      Math.min(
-        100,
-        Math.round(
-          pages.length /
-          maxPages *
-          100
-        )
-      ) + "%";
-
-  }
-
-
-  onProgress({
-    type:"assets"
   });
 
 
-  /* CSS */
+  /*
+    EXTERNAL CSS
+  */
 
-  const cssResolved =
-    await mapLimit(
-      [...cssUrls],
-      2,
-      async url => {
+  doc.querySelectorAll('link[rel~="stylesheet"][href]').forEach(link => {
 
-        try{
-
-          const response =
-            await fetchViaProxy(
-              url,
-              15000
-            );
-
-          return (
-            `/* ${url} */\n` +
-            response.text
-          );
-
-        }catch(error){
-
-          return (
-            `/* FAILED ${url}\n` +
-            `${error.message}\n*/`
-          );
-
-        }
-
-      }
+    const href = normalizeUrl(
+      link.getAttribute("href"),
+      url
     );
 
+    if (href) {
+      cssUrls.push(href);
+    }
+  });
 
-  /* JS */
 
-  const jsResolved =
-    await mapLimit(
-      [...jsUrls],
-      2,
-      async url => {
+  /*
+    INLINE + EXTERNAL JS
+  */
 
-        try{
+  doc.querySelectorAll("script").forEach(script => {
 
-          const response =
-            await fetchViaProxy(
-              url,
-              15000
-            );
+    const src = script.getAttribute("src");
 
-          return (
-            `/* ${url} */\n` +
-            response.text
-          );
+    if (src) {
 
-        }catch(error){
+      const jsUrl = normalizeUrl(src, url);
 
-          return (
-            `/* FAILED ${url}\n` +
-            `${error.message}\n*/`
-          );
-
-        }
-
+      if (jsUrl) {
+        jsUrls.push(jsUrl);
       }
+
+    } else {
+
+      const code = script.textContent || "";
+
+      if (code.trim()) {
+        inlineJs.push(code);
+      }
+
+    }
+
+  });
+
+
+  /*
+    INTERNAL LINKS
+  */
+
+  doc.querySelectorAll("a[href]").forEach(a => {
+
+    const href = normalizeUrl(
+      a.getAttribute("href"),
+      url
     );
+
+    if (!href) return;
+
+    if (isSameOrigin(href, url)) {
+      links.push(href);
+    }
+
+  });
 
 
   return {
-
-    pages,
-
-    css:[
-      ...inlineCss,
-      ...cssResolved.filter(Boolean)
-    ].join("\n\n"),
-
-    js:[
-      ...inlineJs,
-      ...jsResolved.filter(Boolean)
-    ].join("\n\n"),
-
-    cssCount:
-      inlineCss.length +
-      cssResolved.filter(Boolean).length,
-
-    jsCount:
-      inlineJs.length +
-      jsResolved.filter(Boolean).length,
-
-    pageErrors
-
+    url,
+    html,
+    inlineCss,
+    inlineJs,
+    cssUrls,
+    jsUrls,
+    links
   };
-
 }
 
 
-/* =========================================================
-   STORE
-========================================================= */
+/*
+  ============================================================
+  ASSET FETCHING
+  ============================================================
+*/
 
-let store={
-  pages:[],
-  css:"",
-  js:"",
-  base:""
-};
+async function fetchAssets(urls, map, type) {
 
-let activeTab="html";
-let activePageIdx=0;
+  const unique = [...new Set(urls)];
 
+  for (let i = 0; i < unique.length; i++) {
 
-/* =========================================================
-   STATUS
-========================================================= */
+    const url = unique[i];
 
-function setStatus(
-  message,
-  type=""
-){
+    if (map.has(url)) {
+      continue;
+    }
 
-  statusEl.textContent =
-    message;
+    loadingStatus.textContent =
+      `Mengambil ${type}: ${i + 1}/${unique.length}`;
 
-  statusEl.className =
-    "status" +
-    (
-      type
-        ? " " + type
-        : ""
-    );
+    try {
 
+      const text = await fetchDirect(url);
+
+      map.set(url, text);
+
+    } catch (error) {
+
+      map.set(
+        url,
+        `/* GAGAL MENGAMBIL ${url}\n${error.message} */`
+      );
+
+    }
+  }
 }
 
 
-/* =========================================================
-   RENDER CODE
-========================================================= */
+/*
+  ============================================================
+  CRAWLER
+  ============================================================
+*/
 
-function renderTab(){
+async function crawl(startUrl, maxPages) {
 
-  tabs.forEach(tab => {
+  const queue = [startUrl];
+  const visited = new Set();
 
-    tab.classList.toggle(
-      "active",
-      tab.dataset.tab ===
-      activeTab
+  const pages = [];
+
+  while (
+    queue.length &&
+    pages.length < maxPages
+  ) {
+
+    const url = queue.shift();
+
+    if (visited.has(url)) {
+      continue;
+    }
+
+    visited.add(url);
+
+    loadingStatus.textContent =
+      `Mengambil halaman ${pages.length + 1}/${maxPages}...`;
+
+    try {
+
+      const html = await fetchDirect(url);
+
+      const page = parsePage(url, html);
+
+      pages.push(page);
+
+      for (const link of page.links) {
+
+        if (
+          !visited.has(link) &&
+          !queue.includes(link) &&
+          pages.length + queue.length < maxPages * 2
+        ) {
+
+          queue.push(link);
+
+        }
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "Gagal mengambil:",
+        url,
+        error
+      );
+
+      /*
+        Jangan langsung menghentikan crawler.
+        Halaman lain masih bisa dicoba.
+      */
+
+    }
+  }
+
+  return pages;
+}
+
+
+/*
+  ============================================================
+  BUILD COMBINED SOURCE
+  ============================================================
+*/
+
+function buildCss() {
+
+  const output = [];
+
+  for (const page of state.pages) {
+
+    output.push(
+      `\n/* ==================================================
+PAGE: ${page.url}
+================================================== */\n`
     );
+
+    for (const cssUrl of page.cssUrls) {
+
+      const css = state.cssMap.get(cssUrl);
+
+      if (css) {
+        output.push(
+          `\n/* SOURCE: ${cssUrl} */\n${css}\n`
+        );
+      }
+
+    }
+
+    for (const inlineCss of page.inlineCss) {
+
+      output.push(
+        `\n/* INLINE CSS: ${page.url} */\n${inlineCss}\n`
+      );
+
+    }
+
+  }
+
+  return output.join("\n");
+}
+
+
+function buildJs() {
+
+  const output = [];
+
+  for (const page of state.pages) {
+
+    output.push(
+      `\n/* ==================================================
+PAGE: ${page.url}
+================================================== */\n`
+    );
+
+    for (const jsUrl of page.jsUrls) {
+
+      const js = state.jsMap.get(jsUrl);
+
+      if (js) {
+
+        output.push(
+          `\n/* SOURCE: ${jsUrl} */\n${js}\n`
+        );
+
+      }
+
+    }
+
+    for (const inlineJs of page.inlineJs) {
+
+      output.push(
+        `\n/* INLINE JS: ${page.url} */\n${inlineJs}\n`
+      );
+
+    }
+
+  }
+
+  return output.join("\n");
+}
+
+
+/*
+  ============================================================
+  UI
+  ============================================================
+*/
+
+function renderPageSelectors() {
+
+  htmlPageSelect.innerHTML = "";
+  previewPageSelect.innerHTML = "";
+
+  state.pages.forEach((page, index) => {
+
+    const option1 = document.createElement("option");
+
+    option1.value = index;
+    option1.textContent =
+      `${index + 1}. ${page.url}`;
+
+    htmlPageSelect.appendChild(option1);
+
+
+    const option2 = document.createElement("option");
+
+    option2.value = index;
+    option2.textContent =
+      `${index + 1}. ${page.url}`;
+
+    previewPageSelect.appendChild(option2);
 
   });
 
-
-  pageSelect.style.display =
-    activeTab === "html" &&
-    store.pages.length > 1
-      ? "block"
-      : "none";
+}
 
 
-  if(activeTab==="html"){
+function renderHtml() {
 
-    const page =
-      store.pages[
-        activePageIdx
-      ] ||
-      store.pages[0];
+  if (!state.pages.length) {
 
-
-    if(!page){
-
-      panelTitle.textContent =
-        "index.html";
-
-      codeOutput.textContent =
-        "Tidak ada HTML.";
-
-      codeOutput.className =
-        "empty";
-
-      return;
-
-    }
-
-
-    panelTitle.textContent =
-      pathLabel(page.url);
-
-    codeOutput.textContent =
-      page.html;
-
-    codeOutput.className="";
+    htmlCode.textContent =
+      "Tidak ada halaman yang berhasil diambil.";
 
     return;
-
   }
 
+  const index = Number(htmlPageSelect.value) || 0;
 
-  if(activeTab==="css"){
+  htmlCode.textContent =
+    state.pages[index]?.html ||
+    "HTML tidak tersedia.";
 
-    panelTitle.textContent =
-      "styles.css";
-
-
-    if(store.css.trim()){
-
-      codeOutput.textContent =
-        store.css;
-
-      codeOutput.className="";
-
-    }else{
-
-      codeOutput.textContent =
-        "Tidak ada CSS.";
-
-      codeOutput.className =
-        "empty";
-
-    }
-
-    return;
-
-  }
+}
 
 
-  panelTitle.textContent =
-    "script.js";
+function renderStats() {
+
+  const htmlSize =
+    state.pages.reduce(
+      (sum, page) => sum + page.html.length,
+      0
+    );
+
+  $("statPages").textContent =
+    state.pages.length;
+
+  $("statHtml").textContent =
+    formatBytes(htmlSize);
+
+  $("statCss").textContent =
+    formatBytes(state.css.length);
+
+  $("statJs").textContent =
+    formatBytes(state.js.length);
+
+}
 
 
-  if(store.js.trim()){
+function renderAll() {
 
-    codeOutput.textContent =
-      store.js;
+  renderPageSelectors();
 
-    codeOutput.className="";
+  renderHtml();
 
-  }else{
+  cssCode.textContent =
+    state.css || "Tidak ada CSS.";
 
-    codeOutput.textContent =
-      "Tidak ada JavaScript.";
+  jsCode.textContent =
+    state.js || "Tidak ada JavaScript.";
 
-    codeOutput.className =
-      "empty";
+  renderStats();
 
+  if (state.pages.length) {
+    refreshPreview();
   }
 
 }
 
 
-tabs.forEach(tab => {
+/*
+  ============================================================
+  PREVIEW
+  ============================================================
+*/
 
-  tab.addEventListener(
-    "click",
-    () => {
+function buildPreview(page) {
 
-      activeTab =
-        tab.dataset.tab;
+  let html = page.html;
 
-      renderTab();
+  /*
+    Remove CSP meta.
+    CSP from the original site can block our injected
+    CSS/JS inside srcdoc.
+  */
 
-    }
+  html = html.replace(
+    /<meta\b[^>]*http-equiv\s*=\s*["']?Content-Security-Policy["']?[^>]*>/gi,
+    ""
   );
 
-});
 
+  /*
+    Remove external stylesheet tags.
+    We inject the fetched CSS ourselves.
+  */
 
-pageSelect.addEventListener(
-  "change",
-  () => {
-
-    activePageIdx =
-      Number(
-        pageSelect.value
-      );
-
-    renderTab();
-
-    buildPreview();
-
-  }
-);
-
-
-/* =========================================================
-   COPY
-========================================================= */
-
-copyBtn.addEventListener(
-  "click",
-  async () => {
-
-    try{
-
-      await navigator.clipboard.writeText(
-        codeOutput.textContent
-      );
-
-      copyBtn.textContent =
-        "TERSALIN";
-
-      setTimeout(
-        () => {
-          copyBtn.textContent =
-            "SALIN";
-        },
-        1200
-      );
-
-    }catch{
-
-      setStatus(
-        "Browser menolak clipboard.",
-        "error"
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   DOWNLOAD CURRENT FILE
-========================================================= */
-
-downloadBtn.addEventListener(
-  "click",
-  () => {
-
-    const files={
-
-      html:{
-        name:"source.html",
-        mime:"text/html;charset=utf-8"
-      },
-
-      css:{
-        name:"styles.css",
-        mime:"text/css;charset=utf-8"
-      },
-
-      js:{
-        name:"script.js",
-        mime:"text/javascript;charset=utf-8"
-      }
-
-    };
-
-
-    const file =
-      files[activeTab];
-
-
-    const blob =
-      new Blob(
-        [
-          codeOutput.textContent
-        ],
-        {
-          type:file.mime
-        }
-      );
-
-
-    const url =
-      URL.createObjectURL(blob);
-
-
-    const a =
-      document.createElement("a");
-
-    a.href=url;
-
-    a.download =
-      file.name;
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    a.remove();
-
-
-    setTimeout(
-      () => URL.revokeObjectURL(url),
-      500
-    );
-
-  }
-);
-
-
-/* =========================================================
-   PREVIEW
-========================================================= */
-
-function makePreviewHTML(){
-
-  const page =
-    store.pages[
-      activePageIdx
-    ] ||
-    store.pages[0];
-
-
-  if(!page){
-    return "";
-  }
-
-
-  let html =
-    page.html;
+  html = html.replace(
+    /<link\b[^>]*rel\s*=\s*["'][^"']*stylesheet[^"']*["'][^>]*>/gi,
+    ""
+  );
 
 
   /*
-    Hapus external CSS.
-    CSS hasil crawl dimasukkan langsung.
+    Remove external JS.
+    Inline JS is preserved.
   */
 
-  html =
-    html.replace(
-      /<link\b[^>]*rel=["']?stylesheet["']?[^>]*>/gi,
-      ""
-    );
+  html = html.replace(
+    /<script\b(?=[^>]*\bsrc\s*=)[^>]*>[\s\S]*?<\/script>/gi,
+    ""
+  );
 
 
   /*
-    Hapus external JS.
+    Inject BASE.
+    This allows relative images, fonts, links, etc.
+    to resolve against the original website.
   */
 
-  html =
-    html.replace(
-      /<script\b[^>]*src=["'][^"']+["'][^>]*>\s*<\/script>/gi,
-      ""
+  const baseTag =
+    `<base href="${escapeAttr(page.url)}">`;
+
+
+  if (/<head\b[^>]*>/i.test(html)) {
+
+    html = html.replace(
+      /<head\b[^>]*>/i,
+      match => `${match}${baseTag}`
     );
 
-
-  /*
-    Pastikan ada <head>.
-  */
-
-  const styleBlock =
-    `<style>
-      ${store.css}
-    </style>`;
-
-
-  const scriptBlock =
-    `<script>
-      ${store.js}
-    <\/script>`;
-
-
-  if(
-    /<\/head>/i.test(html)
-  ){
+  } else {
 
     html =
-      html.replace(
-        /<\/head>/i,
-        styleBlock +
-        "</head>"
-      );
-
-  }else{
-
-    html =
-      styleBlock +
+      baseTag +
       html;
 
   }
 
 
-  if(
-    /<\/body>/i.test(html)
-  ){
+  /*
+    CSS for this specific page.
+  */
+
+  const cssParts = [];
+
+  for (const cssUrl of page.cssUrls) {
+
+    const css = state.cssMap.get(cssUrl);
+
+    if (css) {
+      cssParts.push(css);
+    }
+
+  }
+
+  cssParts.push(...page.inlineCss);
+
+  const css =
+    cssParts.join("\n\n");
+
+
+  /*
+    JS for this specific page.
+  */
+
+  const jsParts = [];
+
+  for (const jsUrl of page.jsUrls) {
+
+    const js = state.jsMap.get(jsUrl);
+
+    if (js) {
+      jsParts.push(js);
+    }
+
+  }
+
+  jsParts.push(...page.inlineJs);
+
+  let js =
+    jsParts.join("\n\n");
+
+
+  /*
+    Prevent </script> inside fetched JS from closing
+    our injected script tag.
+  */
+
+  js = js.replace(
+    /<\/script/gi,
+    "<\\/script"
+  );
+
+
+  const cssTag =
+    `<style id="sourcegrab-css">\n${css}\n</style>`;
+
+
+  const jsTag =
+    `<script>\n${js}\n<\/script>`;
+
+
+  if (/<\/head>/i.test(html)) {
+
+    html = html.replace(
+      /<\/head>/i,
+      `${cssTag}</head>`
+    );
+
+  } else {
 
     html =
-      html.replace(
-        /<\/body>/i,
-        scriptBlock +
-        "</body>"
-      );
-
-  }else{
-
-    html +=
-      scriptBlock;
+      cssTag +
+      html;
 
   }
 
 
-  /*
-    Base URL agar relative asset/link
-    punya referensi URL asli.
+  if (/<\/body>/i.test(html)) {
 
-    Beberapa resource tetap bisa gagal karena
-    browser sandbox/CORS.
-  */
-
-  const baseTag =
-    `<base href="${page.url}">`;
-
-
-  html =
-    html.replace(
-      /<head([^>]*)>/i,
-      `<head$1>${baseTag}`
+    html = html.replace(
+      /<\/body>/i,
+      `${jsTag}</body>`
     );
+
+  } else {
+
+    html += jsTag;
+
+  }
 
 
   return html;
+}
+
+
+function refreshPreview() {
+
+  if (!state.pages.length) {
+
+    previewFrame.srcdoc = `
+      <!DOCTYPE html>
+      <html>
+      <body style="font-family:system-ui;padding:30px">
+        <h2>Belum ada source</h2>
+      </body>
+      </html>
+    `;
+
+    return;
+  }
+
+  const index =
+    Number(previewPageSelect.value) || 0;
+
+  const page =
+    state.pages[index];
+
+  if (!page) return;
+
+  previewFrame.srcdoc =
+    buildPreview(page);
 
 }
 
 
-function buildPreview(){
+/*
+  ============================================================
+  COPY
+  ============================================================
+*/
 
-  if(
-    !store.pages.length
-  ){
+$("copyBtn").addEventListener("click", async () => {
+
+  const activeTab =
+    document.querySelector(".tab.active")?.dataset.tab;
+
+  let text = "";
+
+  if (activeTab === "html") {
+    text = htmlCode.textContent;
+  }
+
+  if (activeTab === "css") {
+    text = cssCode.textContent;
+  }
+
+  if (activeTab === "js") {
+    text = jsCode.textContent;
+  }
+
+  if (activeTab === "preview") {
+    text = state.pages.length
+      ? buildPreview(
+          state.pages[
+            Number(previewPageSelect.value) || 0
+          ]
+        )
+      : "";
+  }
+
+  if (!text) return;
+
+  try {
+
+    await navigator.clipboard.writeText(text);
+
+    showMessage(
+      "success",
+      "Source berhasil disalin ke clipboard."
+    );
+
+  } catch {
+
+    showMessage(
+      "error",
+      "Clipboard browser tidak tersedia."
+    );
+
+  }
+
+});
+
+
+/*
+  ============================================================
+  DOWNLOAD SINGLE SOURCE
+  ============================================================
+*/
+
+$("downloadBtn").addEventListener("click", () => {
+
+  if (!state.pages.length) {
+
+    showMessage(
+      "error",
+      "Belum ada source yang berhasil diambil."
+    );
+
+    return;
+  }
+
+  const index =
+    Number(htmlPageSelect.value) || 0;
+
+  const page =
+    state.pages[index];
+
+  const blob =
+    new Blob(
+      [page.html],
+      { type: "text/html;charset=utf-8" }
+    );
+
+  downloadBlob(
+    blob,
+    `page-${index + 1}.html`
+  );
+
+});
+
+
+/*
+  ============================================================
+  ZIP
+  ============================================================
+*/
+
+function createZipPage(page, index) {
+
+  let html = page.html;
+
+
+  /*
+    Remove original external CSS.
+  */
+
+  html = html.replace(
+    /<link\b[^>]*rel\s*=\s*["'][^"']*stylesheet[^"']*["'][^>]*>/gi,
+    ""
+  );
+
+
+  /*
+    Remove external JS.
+  */
+
+  html = html.replace(
+    /<script\b(?=[^>]*\bsrc\s*=)[^>]*>[\s\S]*?<\/script>/gi,
+    ""
+  );
+
+
+  /*
+    Inject CSS.
+  */
+
+  const cssPath =
+    index === 0
+      ? "assets/styles.css"
+      : "../assets/styles.css";
+
+
+  const jsPath =
+    index === 0
+      ? "assets/script.js"
+      : "../assets/script.js";
+
+
+  const cssLink =
+    `<link rel="stylesheet" href="${cssPath}">`;
+
+
+  const jsLink =
+    `<script src="${jsPath}"></script>`;
+
+
+  if (/<\/head>/i.test(html)) {
+
+    html = html.replace(
+      /<\/head>/i,
+      `${cssLink}</head>`
+    );
+
+  } else {
+
+    html =
+      cssLink +
+      html;
+
+  }
+
+
+  if (/<\/body>/i.test(html)) {
+
+    html = html.replace(
+      /<\/body>/i,
+      `${jsLink}</body>`
+    );
+
+  } else {
+
+    html += jsLink;
+
+  }
+
+
+  return html;
+}
+
+
+async function downloadZip() {
+
+  if (!state.pages.length) {
+
+    showMessage(
+      "error",
+      "Tidak ada source yang dapat dimasukkan ke ZIP."
+    );
+
     return;
   }
 
 
-  const html =
-    makePreviewHTML();
+  if (typeof JSZip === "undefined") {
+
+    showMessage(
+      "error",
+      "Library ZIP belum tersedia. Pastikan koneksi internet aktif."
+    );
+
+    return;
+  }
 
 
-  previewFrame.srcdoc =
-    html;
+  setLoading(
+    true,
+    "Membuat ZIP..."
+  );
 
 
-  preview.style.display =
-    "block";
+  try {
+
+    const zip = new JSZip();
+
+    const firstPage =
+      state.pages[0];
+
+    let hostname = "website";
+
+    try {
+      hostname =
+        new URL(firstPage.url).hostname
+          .replace(/[^\w.-]/g, "_");
+    } catch {}
+
+
+    /*
+      README
+    */
+
+    zip.file(
+      "README.txt",
+`SourceGrab Export
+=================
+
+Pages:
+${state.pages.length}
+
+Generated:
+${new Date().toISOString()}
+
+Files:
+- index.html
+- pages/*.html
+- assets/styles.css
+- assets/script.js
+
+Catatan:
+CSS, JavaScript, gambar, font, API, dan resource eksternal
+dapat tetap bergantung pada website aslinya.
+`
+    );
+
+
+    /*
+      Main HTML
+    */
+
+    zip.file(
+      "index.html",
+      createZipPage(
+        state.pages[0],
+        0
+      )
+    );
+
+
+    /*
+      Additional pages
+    */
+
+    state.pages
+      .slice(1)
+      .forEach((page, i) => {
+
+        zip.file(
+          `pages/page-${i + 2}.html`,
+          createZipPage(
+            page,
+            i + 1
+          )
+        );
+
+      });
+
+
+    /*
+      Assets
+    */
+
+    zip.file(
+      "assets/styles.css",
+      state.css ||
+      "/* No CSS found */"
+    );
+
+
+    zip.file(
+      "assets/script.js",
+      state.js ||
+      "// No JavaScript found"
+    );
+
+
+    /*
+      Manifest
+    */
+
+    zip.file(
+      "sourcegrab-manifest.json",
+      JSON.stringify(
+        {
+          generatedAt:
+            new Date().toISOString(),
+
+          pages:
+            state.pages.map(page => ({
+              url: page.url,
+              css: page.cssUrls,
+              javascript: page.jsUrls
+            }))
+        },
+        null,
+        2
+      )
+    );
+
+
+    const blob =
+      await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: {
+          level: 6
+        }
+      });
+
+
+    downloadBlob(
+      blob,
+      `${hostname}-sourcegrab.zip`
+    );
+
+
+    showMessage(
+      "success",
+      "ZIP berhasil dibuat dan siap diunduh."
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showMessage(
+      "error",
+      `Gagal membuat ZIP: ${escapeHtml(error.message)}`
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
 
 }
 
 
-refreshPreviewBtn.addEventListener(
+$("zipBtn").addEventListener(
   "click",
-  () => {
-
-    buildPreview();
-
-  }
+  downloadZip
 );
 
 
-openPreviewBtn.addEventListener(
+/*
+  ============================================================
+  PAGE SELECT
+  ============================================================
+*/
+
+htmlPageSelect.addEventListener(
+  "change",
+  renderHtml
+);
+
+
+previewPageSelect.addEventListener(
+  "change",
+  refreshPreview
+);
+
+
+$("refreshPreviewBtn").addEventListener(
+  "click",
+  refreshPreview
+);
+
+
+/*
+  ============================================================
+  OPEN PREVIEW
+  ============================================================
+*/
+
+$("openPreviewBtn").addEventListener(
   "click",
   () => {
 
-    const html =
-      makePreviewHTML();
+    if (!state.pages.length) {
 
+      showMessage(
+        "error",
+        "Belum ada halaman untuk preview."
+      );
 
-    if(!html){
       return;
     }
 
+    const index =
+      Number(previewPageSelect.value) || 0;
+
+    const html =
+      buildPreview(
+        state.pages[index]
+      );
 
     const blob =
       new Blob(
         [html],
-        {
-          type:"text/html"
-        }
+        { type: "text/html" }
       );
-
 
     const url =
       URL.createObjectURL(blob);
 
-
     window.open(
       url,
-      "_blank"
+      "_blank",
+      "noopener,noreferrer"
     );
-
 
     setTimeout(
       () => URL.revokeObjectURL(url),
-      10000
+      60000
     );
 
   }
 );
 
 
-/* =========================================================
-   ZIP
-========================================================= */
+/*
+  ============================================================
+  TABS
+  ============================================================
+*/
 
-function safeFilename(
-  value
-){
+document.querySelectorAll(".tab")
+  .forEach(tab => {
 
-  return value
-    .replace(
-      /[^a-z0-9._-]+/gi,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      ""
-    )
-    .slice(
-      0,
-      80
-    ) || "page";
+    tab.addEventListener(
+      "click",
+      () => {
 
-}
-
-
-zipBtn.addEventListener(
-  "click",
-  async () => {
-
-    if(
-      !store.pages.length
-    ){
-
-      setStatus(
-        "Belum ada source yang bisa diunduh.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    if(
-      typeof JSZip === "undefined"
-    ){
-
-      setStatus(
-        "JSZip gagal dimuat. Periksa koneksi internet lalu refresh.",
-        "error"
-      );
-
-      return;
-    }
-
-
-    zipBtn.disabled=true;
-
-    zipBtn.textContent =
-      "MEMBUAT ZIP...";
-
-
-    try{
-
-      const zip =
-        new JSZip();
-
-
-      const root =
-        zip.folder(
-          "sourcegrab"
-        );
-
-
-      /*
-        README
-      */
-
-      root.file(
-        "README.txt",
-        [
-          "SourceGrab Export",
-          "",
-          "Website:",
-          store.base,
-          "",
-          "Isi:",
-          "- pages/ = HTML halaman",
-          "- css/styles.css = CSS gabungan",
-          "- js/script.js = JavaScript gabungan",
-          "",
-          "Catatan:",
-          "Export hanya berisi source yang berhasil diperoleh.",
-          "Server-side source tidak termasuk."
-        ].join("\n")
-      );
-
-
-      /*
-        CSS
-      */
-
-      root
-        .folder("css")
-        .file(
-          "styles.css",
-          store.css || ""
-        );
-
-
-      /*
-        JS
-      */
-
-      root
-        .folder("js")
-        .file(
-          "script.js",
-          store.js || ""
-        );
-
-
-      /*
-        Semua halaman
-      */
-
-      const pagesFolder =
-        root.folder("pages");
-
-
-      store.pages.forEach(
-        (page,index) => {
-
-          const url =
-            new URL(
-              page.url
-            );
-
-
-          let filename;
-
-
-          if(
-            url.pathname === "/"
-          ){
-
-            filename =
-              "index.html";
-
-          }else{
-
-            filename =
-              safeFilename(
-                url.pathname
-                  .replace(
-                    /^\/+/,
-                    ""
-                  )
-                  .replace(
-                    /\//g,
-                    "-"
-                  )
-              ) +
-              ".html";
-
-          }
-
-
-          if(
-            index === 0 &&
-            url.pathname === "/"
-          ){
-
-            root.file(
-              "index.html",
-              page.html
-            );
-
-          }
-
-
-          pagesFolder.file(
-            `${String(index+1).padStart(2,"0")}-${filename}`,
-            page.html
+        document
+          .querySelectorAll(".tab")
+          .forEach(item =>
+            item.classList.remove("active")
           );
 
+        document
+          .querySelectorAll(".panel")
+          .forEach(panel =>
+            panel.classList.remove("active")
+          );
+
+
+        tab.classList.add("active");
+
+        const target =
+          $("panel-" + tab.dataset.tab);
+
+        if (target) {
+          target.classList.add("active");
         }
-      );
 
 
-      /*
-        Preview export
-      */
-
-      root.file(
-        "preview.html",
-        makePreviewHTML()
-      );
-
-
-      const blob =
-        await zip.generateAsync(
-          {
-            type:"blob",
-            compression:"DEFLATE",
-            compressionOptions:{
-              level:6
-            }
-          },
-          metadata => {
-
-            setStatus(
-              `Membuat ZIP... ${Math.round(metadata.percent)}%`
-            );
-
-          }
-        );
-
-
-      const hostname =
-        safeFilename(
-          new URL(
-            store.base
-          ).hostname
-        );
-
-
-      const url =
-        URL.createObjectURL(
-          blob
-        );
-
-
-      const a =
-        document.createElement(
-          "a"
-        );
-
-
-      a.href=url;
-
-      a.download =
-        `SourceGrab-${hostname}.zip`;
-
-
-      document.body.appendChild(a);
-
-      a.click();
-
-      a.remove();
-
-
-      setTimeout(
-        () => URL.revokeObjectURL(url),
-        5000
-      );
-
-
-      setStatus(
-        "ZIP berhasil dibuat.",
-        "ok"
-      );
-
-
-    }catch(error){
-
-      console.error(error);
-
-      setStatus(
-        "Gagal membuat ZIP: " +
-        error.message,
-        "error"
-      );
-
-    }finally{
-
-      zipBtn.disabled=false;
-
-      zipBtn.textContent =
-        "DOWNLOAD ZIP";
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   PROXY TEST
-========================================================= */
-
-testProxyBtn.addEventListener(
-  "click",
-  async () => {
-
-    proxyResults.innerHTML="";
-
-    testProxyBtn.disabled=true;
-
-
-    for(
-      const proxy of getProxies()
-    ){
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-
-      row.className =
-        "proxy-row";
-
-
-      row.innerHTML =
-        `<span>${proxy.name}</span>
-         <span>TESTING...</span>`;
-
-
-      proxyResults.appendChild(
-        row
-      );
-
-
-      const start =
-        performance.now();
-
-
-      try{
-
-        const response =
-          await fetchWithTimeout(
-            proxy.build(
-              "https://example.com/"
-            ),
-            10000
-          );
-
-
-        const text =
-          await response.text();
-
-
-        const ok =
-          response.ok &&
-          /Example Domain/i.test(
-            text
-          );
-
-
-        const ms =
-          Math.round(
-            performance.now() -
-            start
-          );
-
-
-        row.innerHTML =
-          `<span>${proxy.name}</span>
-           <span class="${
-             ok
-               ? "proxy-ok"
-               : "proxy-fail"
-           }">
-             ${
-               ok
-                 ? "OK"
-                 : "FAIL"
-             }
-             · ${response.status}
-             · ${ms}ms
-           </span>`;
-
-
-      }catch(error){
-
-        const ms =
-          Math.round(
-            performance.now() -
-            start
-          );
-
-
-        row.innerHTML =
-          `<span>${proxy.name}</span>
-           <span class="proxy-fail">
-             FAIL · ${ms}ms
-           </span>`;
+        if (tab.dataset.tab === "preview") {
+          refreshPreview();
+        }
 
       }
+    );
 
-    }
-
-
-    testProxyBtn.disabled=false;
-
-  }
-);
+  });
 
 
-/* =========================================================
-   SUBMIT
-========================================================= */
+/*
+  ============================================================
+  MAIN GRAB
+  ============================================================
+*/
 
-form.addEventListener(
-  "submit",
-  async event => {
+grabBtn.addEventListener(
+  "click",
+  async () => {
 
-    event.preventDefault();
+    const raw =
+      urlInput.value.trim();
 
+    if (!raw) {
 
-    const url =
-      normalizeUrl(
-        input.value
-      );
-
-
-    if(!url){
-
-      setStatus(
-        "URL tidak valid.",
-        "error"
+      showMessage(
+        "error",
+        "Masukkan URL website terlebih dahulu."
       );
 
       return;
     }
 
 
-    const maxPages =
-      Number(
-        maxPagesSel.value
+    const startUrl =
+      normalizeUrl(
+        raw.startsWith("http")
+          ? raw
+          : "https://" + raw
       );
 
 
-    grabBtn.disabled=true;
+    if (!startUrl) {
 
-    grabBtn.textContent =
-      "MERAYAPI...";
+      showMessage(
+        "error",
+        "URL tidak valid."
+      );
 
-
-    result.style.display =
-      "none";
-
-    preview.style.display =
-      "none";
+      return;
+    }
 
 
-    progressWrap.style.display =
-      "block";
+    /*
+      Reset
+    */
+
+    state.pages = [];
+    state.css = "";
+    state.js = "";
+    state.cssMap.clear();
+    state.jsMap.clear();
+    state.visited.clear();
+    state.baseUrl = startUrl;
 
 
-    progressBar.style.width =
-      "0%";
+    htmlCode.textContent =
+      "Mengambil source...";
+
+    cssCode.textContent =
+      "Mengambil CSS...";
+
+    jsCode.textContent =
+      "Mengambil JavaScript...";
 
 
-    setStatus(
-      `Memulai crawler...\n${url}`
+    clearMessage();
+
+    setLoading(
+      true,
+      "Mencoba koneksi langsung..."
     );
 
-
-    try{
-
-      const data =
-        await crawlSite(
-          url,
-          maxPages,
-          progress => {
-
-            if(
-              progress.type === "page"
-            ){
-
-              setStatus(
-                `Mengambil halaman ${progress.current}/${progress.total}\n` +
-                pathLabel(
-                  progress.url
-                )
-              );
-
-            }
+    grabBtn.disabled = true;
 
 
-            if(
-              progress.type === "assets"
-            ){
+    try {
 
-              setStatus(
-                "Halaman selesai.\n" +
-                "Mengambil CSS dan JavaScript..."
-              );
+      /*
+        Test first request.
+        This gives a much clearer CORS error.
+      */
 
-            }
+      let firstHtml;
 
-          }
-        );
+      try {
 
+        firstHtml =
+          await fetchDirect(startUrl);
 
-      if(
-        !data.pages.length
-      ){
+      } catch (error) {
 
         throw new Error(
-          "Tidak ada halaman yang berhasil diambil.\n\n" +
-          "Semua proxy gagal atau website memblokir request."
+          "Website menolak request langsung dari browser. " +
+          "Kemungkinan besar CORS tidak diizinkan. " +
+          "Karena mode ini sengaja tidak menggunakan proxy publik, " +
+          "website seperti ini tidak dapat diambil dari frontend murni."
         );
 
       }
 
 
-      store={
-        pages:data.pages,
-        css:data.css,
-        js:data.js,
-        base:url
-      };
+      /*
+        Parse first page.
+      */
+
+      const firstPage =
+        parsePage(
+          startUrl,
+          firstHtml
+        );
 
 
-      activeTab="html";
-
-      activePageIdx=0;
-
-
-      pageSelect.innerHTML="";
-
-
-      store.pages.forEach(
-        (page,index) => {
-
-          const option =
-            document.createElement(
-              "option"
-            );
-
-
-          option.value =
-            index;
-
-          option.textContent =
-            pathLabel(
-              page.url
-            );
-
-
-          pageSelect.appendChild(
-            option
-          );
-
-        }
-      );
-
-
-      countHtml.textContent =
-        `(${store.pages.length})`;
-
-
-      countCss.textContent =
-        data.cssCount
-          ? `(${data.cssCount})`
-          : "";
-
-
-      countJs.textContent =
-        data.jsCount
-          ? `(${data.jsCount})`
-          : "";
-
-
-      pagesSummary.innerHTML =
-        `Berhasil mengambil <b>${store.pages.length}</b> halaman dari <b>${new URL(url).hostname}</b>.`;
-
-
-      if(
-        data.pageErrors.length
-      ){
-
-        pagesSummary.innerHTML +=
-          ` <span style="color:var(--yellow)">
-             ${data.pageErrors.length} gagal
-             </span>`;
-
-      }
-
-
-      result.style.display =
-        "block";
-
-
-      renderTab();
-
-
-      recordDomain(
-        new URL(url).hostname
-      );
-
-
-      setStatus(
-        `Selesai.\n${data.pages.length} halaman berhasil diambil.`,
-        data.pageErrors.length
-          ? "warn"
-          : "ok"
+      state.pages.push(
+        firstPage
       );
 
 
       /*
-        Preview otomatis setelah source
-        berhasil diperoleh.
+        Crawl additional pages.
       */
 
-      buildPreview();
+      const maxPages =
+        Number(maxPagesInput.value) || 1;
 
 
-      result.scrollIntoView({
-        behavior:"smooth",
-        block:"start"
-      });
+      if (maxPages > 1) {
+
+        const additionalPages =
+          await crawl(
+            startUrl,
+            maxPages
+          );
 
 
-    }catch(error){
+        for (const page of additionalPages) {
+
+          if (
+            !state.pages.some(
+              p => p.url === page.url
+            )
+          ) {
+
+            state.pages.push(page);
+
+          }
+
+        }
+
+      }
+
+
+      /*
+        Collect assets.
+      */
+
+      const allCssUrls =
+        state.pages.flatMap(
+          page => page.cssUrls
+        );
+
+
+      const allJsUrls =
+        state.pages.flatMap(
+          page => page.jsUrls
+        );
+
+
+      await fetchAssets(
+        allCssUrls,
+        state.cssMap,
+        "CSS"
+      );
+
+
+      await fetchAssets(
+        allJsUrls,
+        state.jsMap,
+        "JavaScript"
+      );
+
+
+      /*
+        Build combined source.
+      */
+
+      state.css =
+        buildCss();
+
+      state.js =
+        buildJs();
+
+
+      renderAll();
+
+
+      showMessage(
+        "success",
+        `<b>Berhasil.</b> ${state.pages.length} halaman berhasil diambil secara langsung.`
+      );
+
+
+    } catch (error) {
 
       console.error(error);
 
-      setStatus(
-        "GAGAL\n\n" +
-        error.message,
-        "error"
+      state.pages = [];
+      state.css = "";
+      state.js = "";
+
+      htmlCode.textContent =
+        "Tidak ada halaman yang berhasil diambil.";
+
+      cssCode.textContent =
+        "Tidak ada CSS.";
+
+      jsCode.textContent =
+        "Tidak ada JavaScript.";
+
+
+      $("statPages").textContent = "0";
+      $("statHtml").textContent = "0 KB";
+      $("statCss").textContent = "0 KB";
+      $("statJs").textContent = "0 KB";
+
+
+      showMessage(
+        "error",
+        `
+          <b>Gagal mengambil website.</b><br><br>
+          ${escapeHtml(error.message)}
+          <br><br>
+          Jika website tersebut tidak mengizinkan CORS,
+          browser memang tidak dapat membaca source-nya
+          tanpa backend/proxy milik sendiri.
+        `
       );
 
-    }finally{
 
-      grabBtn.disabled=false;
+    } finally {
 
-      grabBtn.textContent =
-        "AMBIL KODE";
+      setLoading(false);
+
+      grabBtn.disabled = false;
 
     }
 
   }
 );
+
+
+/*
+  ============================================================
+  ENTER KEY
+  ============================================================
+*/
+
+urlInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+      grabBtn.click();
+    }
+
+  }
+);
+
+
+/*
+  ============================================================
+  INITIAL PREVIEW
+  ============================================================
+*/
+
+previewFrame.srcdoc = `
+<!DOCTYPE html>
+<html>
+<body style="
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  font-family:system-ui;
+  color:#555;
+">
+  <div style="text-align:center">
+    <h2>SourceGrab Preview</h2>
+    <p>Ambil source website terlebih dahulu.</p>
+  </div>
+</body>
+</html>
+`;
 </script>
 
 </body>
