@@ -29,18 +29,20 @@ body{
 }
 .swu-nav{
   display:flex;justify-content:space-between;align-items:center;
-  padding:18px 32px;
+  padding:16px 32px;flex-wrap:wrap;gap:12px;
   border-bottom:var(--swu-border) solid var(--swu-ink);
   background:var(--swu-surface);
 }
 .swu-logo{font-weight:800;font-size:22px;letter-spacing:-0.5px;}
 .swu-logo span{color:var(--swu-accent);}
-.swu-badge{
-  display:inline-block;border:2px solid var(--swu-ink);border-radius:999px;
-  padding:4px 12px;font-weight:700;font-size:12px;
-  background:var(--swu-accent);color:#08080c;
-  box-shadow:3px 3px 0 0 var(--swu-ink);
+.stats{display:flex;gap:10px;}
+.stat-pill{
+  display:flex;align-items:center;gap:6px;
+  border:2px solid var(--swu-ink);border-radius:999px;
+  padding:5px 14px;font-size:12px;font-weight:700;
+  background:#0d0d13;box-shadow:3px 3px 0 0 var(--swu-accent2);
 }
+.stat-pill b{color:var(--swu-accent);font-size:14px;}
 main{max-width:1000px;margin:0 auto;padding:56px 24px 80px;}
 .hero{text-align:center;margin-bottom:40px;}
 .hero h1{font-size:44px;font-weight:800;line-height:1.15;margin:0 0 14px;}
@@ -76,12 +78,18 @@ main{max-width:1000px;margin:0 auto;padding:56px 24px 80px;}
 .swu-button:active{transform:translate(6px,6px);box-shadow:0 0 0 0 var(--swu-ink);}
 .swu-button:disabled{opacity:0.5;cursor:not-allowed;}
 
-.status{margin-top:16px;font-size:13px;color:var(--swu-muted);min-height:18px;}
+.opts{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:var(--swu-muted);}
+.opts select{
+  background:#0d0d13;color:var(--swu-ink);border:2px solid var(--swu-ink);border-radius:6px;
+  font-family:inherit;font-size:12px;padding:4px 8px;
+}
+
+.status{margin-top:16px;font-size:13px;color:var(--swu-muted);min-height:18px;white-space:pre-wrap;}
 .status.err{color:#ff5b6a;}
 .status.ok{color:var(--swu-accent);}
 
 .result{margin-top:32px;display:none;}
-.tabs{display:flex;gap:8px;margin-bottom:0;}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;}
 .tab{
   border:2px solid var(--swu-ink);border-bottom:none;
   padding:10px 20px;font-weight:700;font-size:13px;cursor:pointer;
@@ -96,20 +104,27 @@ main{max-width:1000px;margin:0 auto;padding:56px 24px 80px;}
   box-shadow:var(--swu-shadow-offset) var(--swu-shadow-offset) 0 0 var(--swu-accent2);
 }
 .panel-head{
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
   padding:12px 16px;border-bottom:2px solid var(--swu-ink);
 }
-.panel-head .actions{display:flex;gap:8px;}
+.panel-head .actions{display:flex;gap:8px;align-items:center;}
 .mini-btn{
   border:2px solid var(--swu-ink);border-radius:8px;background:#0d0d13;color:var(--swu-ink);
   font-family:inherit;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;
 }
 .mini-btn:hover{background:var(--swu-accent);color:#08080c;}
+#pageSelect{
+  background:#0d0d13;color:var(--swu-ink);border:2px solid var(--swu-ink);border-radius:8px;
+  font-family:inherit;font-size:12px;padding:6px 10px;max-width:260px;
+}
 pre{
   margin:0;padding:20px;max-height:460px;overflow:auto;
   font-size:13px;line-height:1.6;color:#c9f7c5;white-space:pre-wrap;word-break:break-word;
 }
 pre.empty{color:var(--swu-muted);font-style:italic;}
+
+.pages-summary{font-size:12px;color:var(--swu-muted);margin-top:10px;}
+.pages-summary b{color:var(--swu-accent2);}
 
 .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:56px;}
 .info-card{padding:20px;}
@@ -128,13 +143,16 @@ footer{text-align:center;padding:24px;color:var(--swu-muted);font-size:12px;bord
 
 <nav class="swu-nav">
   <div class="swu-logo">Source<span>Grab</span></div>
-  <div class="swu-badge">VIEW SOURCE</div>
+  <div class="stats">
+    <div class="stat-pill">👁 <b id="statVisits">0</b> kunjungan</div>
+    <div class="stat-pill">🌐 <b id="statDomains">0</b> domain dicek</div>
+  </div>
 </nav>
 
 <main>
   <div class="hero">
     <h1>Bongkar <span class="accent">Source Code</span><br>Website Manapun</h1>
-    <p>Masukkan domain, dapatkan HTML, CSS, dan JS yang dipakai halaman itu — cuma dari data yang sudah publik dan bisa dilihat lewat browser.</p>
+    <p>Masukkan domain, tool ini merayapi semua halaman internal yang bisa ditemukan lalu mengumpulkan HTML, CSS, dan JS-nya.</p>
   </div>
 
   <div class="swu-card">
@@ -142,10 +160,28 @@ footer{text-align:center;padding:24px;color:var(--swu-muted);font-size:12px;bord
       <input class="swu-input" id="domainInput" type="text" placeholder="contoh.com atau https://contoh.com" autocomplete="off">
       <button class="swu-button" id="grabBtn" type="submit">Ambil Kode</button>
     </form>
+    <div class="opts">
+      Maks. halaman dirayapi:
+      <select id="maxPages">
+        <option value="1">1 (cuma homepage)</option>
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+    <div class="opts">
+      Proxy kustom (opsional):
+      <input class="swu-input" id="customProxy" type="text" placeholder="https://worker-kamu.workers.dev/?url=" style="padding:6px 10px;font-size:12px;min-width:260px;">
+    </div>
     <div class="status" id="status"></div>
+    <div style="margin-top:10px;">
+      <button type="button" class="mini-btn" id="testProxyBtn">TES SEMUA PROXY</button>
+      <div id="proxyTestResult" style="margin-top:10px;font-size:12px;"></div>
+    </div>
   </div>
 
   <div class="result" id="result">
+    <p class="pages-summary" id="pagesSummary"></p>
     <div class="tabs">
       <div class="tab active" data-tab="html">HTML <span class="count" id="countHtml"></span></div>
       <div class="tab" data-tab="css">CSS <span class="count" id="countCss"></span></div>
@@ -155,6 +191,7 @@ footer{text-align:center;padding:24px;color:var(--swu-muted);font-size:12px;bord
       <div class="panel-head">
         <span id="panelTitle" style="font-size:13px;font-weight:700;color:var(--swu-muted);">index.html</span>
         <div class="actions">
+          <select id="pageSelect" style="display:none;"></select>
           <button class="mini-btn" id="copyBtn">SALIN</button>
           <button class="mini-btn" id="downloadBtn">UNDUH</button>
         </div>
@@ -167,33 +204,163 @@ footer{text-align:center;padding:24px;color:var(--swu-muted);font-size:12px;bord
     <div class="swu-card info-card">
       <div class="icon">1</div>
       <h3>Cuma Data Publik</h3>
-      <p>Sama seperti klik kanan → "View Page Source" di browser. Tidak ada bypass keamanan apa pun.</p>
+      <p>Sama seperti klik kanan → "View Page Source" di browser, untuk tiap halaman yang bisa ditemukan lewat link internal.</p>
     </div>
     <div class="swu-card info-card">
       <div class="icon">2</div>
       <h3>Beberapa Situs Bisa Gagal</h3>
-      <p>Situs dengan proteksi CORS/CSP ketat, login-wall, atau rendering via JS berat mungkin tidak bisa diambil penuh.</p>
+      <p>Situs dengan proteksi CORS/CSP ketat, login-wall, rate-limit, atau server lambat mungkin gagal diambil sebagian/semua.</p>
     </div>
     <div class="swu-card info-card">
       <div class="icon">3</div>
       <h3>Hormati Hak Cipta</h3>
-      <p>Kode yang didapat tetap milik pembuat aslinya. Gunakan untuk belajar, bukan klaim ulang atau produksi ulang tanpa izin.</p>
+      <p>Kode yang didapat tetap milik pembuat aslinya. Gunakan untuk belajar, bukan klaim ulang tanpa izin.</p>
     </div>
   </div>
 
-  <p class="note">Alat ini menampilkan markup HTML mentah, CSS eksternal/inline, dan JS eksternal/inline yang direferensikan halaman. Konten yang dirender lewat JavaScript setelah load (SPA berat seperti React/Vue tanpa SSR) tidak akan ikut terekstrak sepenuhnya.</p>
+  <p class="note">Merayapi hanya link internal (domain sama) yang ditemukan mulai dari halaman utama, sedalam satu level. Konten yang dirender lewat JavaScript setelah load (SPA berat) tidak ikut terekstrak sepenuhnya. Statistik kunjungan &amp; domain tersimpan di browser ini saja (localStorage).</p>
+
+  <div class="swu-card" style="margin-top:24px;">
+    <h3 style="margin:0 0 10px;font-size:15px;">Proxy publik sering down/rate-limit. Solusi permanen: deploy proxy sendiri (gratis, 2 menit)</h3>
+    <p style="font-size:12px;color:var(--swu-muted);margin:0 0 12px;">Buka <b>workers.cloudflare.com</b> → buat Worker baru → paste kode ini → deploy. Salin URL worker-nya, isi ke kolom "Proxy kustom" di atas dengan format <code>https://nama-worker.workers.dev/?url=</code>.</p>
+    <pre style="max-height:260px;">export default {
+  async fetch(request) {
+    const target = new URL(request.url).searchParams.get('url');
+    if (!target) return new Response('Missing url param', { status: 400 });
+    const res = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const body = await res.text();
+    return new Response(body, {
+      status: res.status,
+      headers: {
+        'content-type': res.headers.get('content-type') || 'text/plain; charset=utf-8',
+        'access-control-allow-origin': '*',
+      },
+    });
+  },
+};</pre>
+  </div>
 </main>
 
 <footer>SourceGrab</footer>
 
 <script>
+/* ---------- Stats (localStorage) ---------- */
+function initStats(){
+  const visits = parseInt(localStorage.getItem('sg_visits') || '0', 10) + 1;
+  localStorage.setItem('sg_visits', String(visits));
+  document.getElementById('statVisits').textContent = visits;
+  renderDomainCount();
+}
+function renderDomainCount(){
+  const domains = JSON.parse(localStorage.getItem('sg_domains') || '[]');
+  document.getElementById('statDomains').textContent = domains.length;
+}
+function recordDomain(hostname){
+  const domains = JSON.parse(localStorage.getItem('sg_domains') || '[]');
+  if(!domains.includes(hostname)){
+    domains.push(hostname);
+    localStorage.setItem('sg_domains', JSON.stringify(domains));
+  }
+  renderDomainCount();
+}
+initStats();
+
+/* ---------- Proxy layer (multi-fallback) ---------- */
+const BASE_PROXIES = [
+  { build: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u), parse: t => t, label: 'codetabs' },
+  { build: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), parse: t => t, label: 'allorigins-raw' },
+  { build: u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u), parse: t => { try{ return JSON.parse(t).contents; }catch(e){ return null; } }, label: 'allorigins-get' },
+  { build: u => 'https://thingproxy.freeboard.io/fetch/' + u, parse: t => t, label: 'thingproxy' },
+  { build: u => 'https://cors-proxy.htmldriven.com/?url=' + encodeURIComponent(u), parse: t => { try{ return JSON.parse(t).body; }catch(e){ return null; } }, label: 'htmldriven' },
+];
+
+const customProxyInput = document.getElementById('customProxy');
+customProxyInput.value = localStorage.getItem('sg_custom_proxy') || '';
+customProxyInput.addEventListener('change', () => {
+  localStorage.setItem('sg_custom_proxy', customProxyInput.value.trim());
+});
+
+function getActiveProxies(){
+  const custom = customProxyInput.value.trim();
+  if(!custom) return BASE_PROXIES;
+  const customProxy = { build: u => custom + encodeURIComponent(u), parse: t => t, label: 'custom' };
+  return [customProxy, ...BASE_PROXIES];
+}
+
+async function fetchViaProxy(url, timeoutMs){
+  const errors = [];
+  for(const p of getActiveProxies()){
+    const proxied = p.build(url);
+    try{
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs || 20000);
+      const res = await fetch(proxied, { signal: controller.signal });
+      clearTimeout(timer);
+      if(!res.ok){ errors.push(p.label + ': HTTP ' + res.status); continue; }
+      const raw = await res.text();
+      const content = p.parse(raw);
+      if(!content || !content.trim()){ errors.push(p.label + ': kosong/parse gagal'); continue; }
+      return content;
+    }catch(e){
+      errors.push(p.label + ': ' + (e.name === 'AbortError' ? 'timeout' : e.message));
+    }
+  }
+  throw new Error(errors.join(' | '));
+}
+
+/* ---------- Proxy diagnostic ---------- */
+document.getElementById('testProxyBtn').addEventListener('click', async () => {
+  const out = document.getElementById('proxyTestResult');
+  out.innerHTML = 'Menguji proxy terhadap https://example.com ...';
+  const rows = [];
+  for(const p of getActiveProxies()){
+    const start = performance.now();
+    try{
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(p.build('https://example.com'), { signal: controller.signal });
+      clearTimeout(timer);
+      const ms = Math.round(performance.now() - start);
+      if(!res.ok){ rows.push([p.label, false, 'HTTP ' + res.status, ms]); continue; }
+      const text = await res.text();
+      const content = p.parse(text);
+      rows.push([p.label, !!(content && content.includes('Example Domain')), content ? 'OK' : 'parse gagal', ms]);
+    }catch(e){
+      const ms = Math.round(performance.now() - start);
+      rows.push([p.label, false, e.name === 'AbortError' ? 'timeout' : e.message, ms]);
+    }
+  }
+  out.innerHTML = rows.map(([label, ok, msg, ms]) =>
+    '<div style="color:' + (ok ? 'var(--swu-accent)' : '#ff5b6a') + ';">' +
+    (ok ? '✔' : '✘') + ' ' + label + ' — ' + msg + ' (' + ms + 'ms)</div>'
+  ).join('');
+});
+
+/* ---------- Helpers ---------- */
+function normalizeUrl(raw){
+  raw = raw.trim();
+  if(!raw) return null;
+  if(!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+  try{ return new URL(raw).href; }catch(e){ return null; }
+}
+function resolveUrl(href, base){
+  try{ return new URL(href, base).href; }catch(e){ return null; }
+}
+function cleanUrl(u){
+  try{ const x = new URL(u); x.hash=''; return x.href; }catch(e){ return u; }
+}
+
+/* ---------- DOM refs ---------- */
 const form = document.getElementById('grabForm');
 const input = document.getElementById('domainInput');
+const maxPagesSel = document.getElementById('maxPages');
 const btn = document.getElementById('grabBtn');
 const statusEl = document.getElementById('status');
 const result = document.getElementById('result');
+const pagesSummary = document.getElementById('pagesSummary');
 const codeOutput = document.getElementById('codeOutput');
 const panelTitle = document.getElementById('panelTitle');
+const pageSelect = document.getElementById('pageSelect');
 const tabs = document.querySelectorAll('.tab');
 const countHtml = document.getElementById('countHtml');
 const countCss = document.getElementById('countCss');
@@ -201,67 +368,49 @@ const countJs = document.getElementById('countJs');
 const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 
-let store = { html:'', css:'', js:'', base:'' };
+let store = { pages: [], css: '', js: '', base: '' };
 let activeTab = 'html';
-
-function normalizeUrl(raw){
-  raw = raw.trim();
-  if(!raw) return null;
-  if(!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
-  try{ return new URL(raw).href; }catch(e){ return null; }
-}
-
-const PROXIES = [
-  u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-  u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
-  u => 'https://thingproxy.freeboard.io/fetch/' + u,
-];
-
-async function fetchViaProxy(url){
-  const errors = [];
-  for(const build of PROXIES){
-    const proxied = build(url);
-    try{
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
-      const res = await fetch(proxied, { signal: controller.signal });
-      clearTimeout(timeout);
-      if(!res.ok){ errors.push(proxied.split('?')[0] + ': HTTP ' + res.status); continue; }
-      const text = await res.text();
-      if(!text || text.trim().length === 0){ errors.push(proxied.split('?')[0] + ': kosong'); continue; }
-      return text;
-    }catch(e){
-      errors.push(proxied.split('?')[0] + ': ' + (e.name === 'AbortError' ? 'timeout' : e.message));
-    }
-  }
-  throw new Error(errors.join(' | '));
-}
-
-function resolveUrl(href, base){
-  try{ return new URL(href, base).href; }catch(e){ return null; }
-}
+let activePageIdx = 0;
 
 function setStatus(msg, type){
   statusEl.textContent = msg;
   statusEl.className = 'status' + (type ? ' ' + type : '');
 }
 
+function pathLabel(u){
+  try{
+    const x = new URL(u);
+    return (x.pathname === '/' ? '/ (home)' : x.pathname) + x.search;
+  }catch(e){ return u; }
+}
+
 function renderTab(){
   tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === activeTab));
-  const map = { html: ['index.html', store.html], css: ['styles.css', store.css], js: ['script.js', store.js] };
-  const [title, content] = map[activeTab];
-  panelTitle.textContent = title;
-  if(content && content.trim()){
-    codeOutput.textContent = content;
-    codeOutput.classList.remove('empty');
-  } else {
-    codeOutput.textContent = 'Tidak ada konten ' + activeTab.toUpperCase() + ' yang ditemukan/berhasil diambil.';
-    codeOutput.classList.add('empty');
+  pageSelect.style.display = activeTab === 'html' && store.pages.length > 1 ? 'inline-block' : 'none';
+
+  if(activeTab === 'html'){
+    const page = store.pages[activePageIdx] || store.pages[0];
+    panelTitle.textContent = page ? pathLabel(page.url) : 'index.html';
+    if(page && page.html.trim()){
+      codeOutput.textContent = page.html;
+      codeOutput.classList.remove('empty');
+    }else{
+      codeOutput.textContent = 'Tidak ada HTML.';
+      codeOutput.classList.add('empty');
+    }
+  }else if(activeTab === 'css'){
+    panelTitle.textContent = 'styles.css (gabungan semua halaman)';
+    if(store.css.trim()){ codeOutput.textContent = store.css; codeOutput.classList.remove('empty'); }
+    else{ codeOutput.textContent = 'Tidak ada CSS ditemukan/berhasil diambil.'; codeOutput.classList.add('empty'); }
+  }else{
+    panelTitle.textContent = 'script.js (gabungan semua halaman)';
+    if(store.js.trim()){ codeOutput.textContent = store.js; codeOutput.classList.remove('empty'); }
+    else{ codeOutput.textContent = 'Tidak ada JS ditemukan/berhasil diambil.'; codeOutput.classList.add('empty'); }
   }
 }
 
 tabs.forEach(t => t.addEventListener('click', () => { activeTab = t.dataset.tab; renderTab(); }));
+pageSelect.addEventListener('change', () => { activePageIdx = parseInt(pageSelect.value, 10); renderTab(); });
 
 copyBtn.addEventListener('click', async () => {
   try{
@@ -272,7 +421,7 @@ copyBtn.addEventListener('click', async () => {
 });
 
 downloadBtn.addEventListener('click', () => {
-  const map = { html:['index.html','text/html'], css:['styles.css','text/css'], js:['script.js','text/javascript'] };
+  const map = { html:['page.html','text/html'], css:['styles.css','text/css'], js:['script.js','text/javascript'] };
   const [filename, mime] = map[activeTab];
   const blob = new Blob([codeOutput.textContent], {type: mime});
   const a = document.createElement('a');
@@ -282,73 +431,137 @@ downloadBtn.addEventListener('click', () => {
   URL.revokeObjectURL(a.href);
 });
 
+/* ---------- Crawler ---------- */
+async function crawlSite(baseUrl, maxPages, onProgress){
+  const origin = new URL(baseUrl).origin;
+  const queue = [baseUrl];
+  const seen = new Set([cleanUrl(baseUrl)]);
+  const pages = [];
+  const cssUrls = new Set();
+  const jsUrls = new Set();
+  const inlineCss = [];
+  const inlineJs = [];
+  const pageErrors = [];
+
+  for(let i = 0; i < queue.length && i < maxPages; i++){
+    const pageUrl = queue[i];
+    onProgress(i + 1, Math.min(queue.length, maxPages), pageUrl);
+    let html;
+    try{
+      html = await fetchViaProxy(pageUrl);
+    }catch(e){
+      pageErrors.push(pathLabel(pageUrl) + ' → gagal: ' + e.message);
+      continue;
+    }
+    pages.push({ url: pageUrl, html });
+
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    doc.querySelectorAll('style').forEach(s => {
+      if(s.textContent.trim()) inlineCss.push('/* inline <style> @ ' + pathLabel(pageUrl) + ' */\n' + s.textContent);
+    });
+    doc.querySelectorAll('link[rel="stylesheet"]').forEach(l => {
+      const href = l.getAttribute('href');
+      const abs = href ? resolveUrl(href, pageUrl) : null;
+      if(abs) cssUrls.add(abs);
+    });
+    doc.querySelectorAll('script').forEach(s => {
+      const src = s.getAttribute('src');
+      if(src){
+        const abs = resolveUrl(src, pageUrl);
+        if(abs) jsUrls.add(abs);
+      }else if(s.textContent.trim()){
+        inlineJs.push('/* inline <script> @ ' + pathLabel(pageUrl) + ' */\n' + s.textContent);
+      }
+    });
+
+    if(i === 0 || true){
+      doc.querySelectorAll('a[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if(!href || href.startsWith('#') || /^(mailto:|tel:|javascript:)/i.test(href)) return;
+        const abs = resolveUrl(href, pageUrl);
+        if(!abs) return;
+        const clean = cleanUrl(abs);
+        try{
+          if(new URL(clean).origin === origin && !seen.has(clean) && queue.length < maxPages){
+            seen.add(clean);
+            queue.push(clean);
+          }
+        }catch(e){}
+      });
+    }
+  }
+
+  onProgress(pages.length, pages.length, null, true);
+
+  const cssResolved = await Promise.all([...cssUrls].map(async u => {
+    try{ const c = await fetchViaProxy(u); return '/* ' + u + ' */\n' + c; }
+    catch(e){ return '/* gagal ambil: ' + u + ' (' + e.message + ') */'; }
+  }));
+  const jsResolved = await Promise.all([...jsUrls].map(async u => {
+    try{ const c = await fetchViaProxy(u); return '/* ' + u + ' */\n' + c; }
+    catch(e){ return '/* gagal ambil: ' + u + ' (' + e.message + ') */'; }
+  }));
+
+  return {
+    pages,
+    css: [...inlineCss, ...cssResolved].join('\n\n'),
+    js: [...inlineJs, ...jsResolved].join('\n\n'),
+    cssCount: inlineCss.length + cssResolved.length,
+    jsCount: inlineJs.length + jsResolved.length,
+    pageErrors,
+  };
+}
+
+/* ---------- Submit ---------- */
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const url = normalizeUrl(input.value);
   if(!url){ setStatus('Domain tidak valid.', 'err'); return; }
+  const maxPages = parseInt(maxPagesSel.value, 10);
 
   btn.disabled = true;
-  btn.textContent = 'MENGAMBIL...';
+  btn.textContent = 'MERAYAPI...';
   setStatus('Menghubungi ' + url + ' ...');
   result.style.display = 'none';
-  store = { html:'', css:'', js:'', base:url };
 
   try{
-    const html = await fetchViaProxy(url);
-    store.html = html;
-
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const cssParts = [];
-    const jsParts = [];
-
-    doc.querySelectorAll('style').forEach(s => cssParts.push('/* inline <style> */\n' + s.textContent));
-    doc.querySelectorAll('link[rel="stylesheet"]').forEach(l => {
-      const href = l.getAttribute('href');
-      const abs = href ? resolveUrl(href, url) : null;
-      if(abs) cssParts.push({ url: abs });
-    });
-
-    doc.querySelectorAll('script').forEach(s => {
-      const src = s.getAttribute('src');
-      if(src){
-        const abs = resolveUrl(src, url);
-        if(abs) jsParts.push({ url: abs });
-      } else if(s.textContent.trim()){
-        jsParts.push('/* inline <script> */\n' + s.textContent);
+    const data = await crawlSite(url, maxPages, (done, total, current, finished) => {
+      if(finished){
+        setStatus('Mengunduh CSS & JS terkait dari semua halaman...');
+      }else{
+        setStatus('Merayapi halaman ' + done + (total ? '/' + total : '') + (current ? ' → ' + pathLabel(current) : ''));
       }
     });
 
-    setStatus('Mengunduh file CSS/JS terkait...');
+    if(data.pages.length === 0){
+      throw new Error('Semua percobaan gagal.');
+    }
 
-    const cssResolved = await Promise.all(cssParts.map(async part => {
-      if(typeof part === 'string') return part;
-      try{
-        const text = await fetchViaProxy(part.url);
-        return '/* ' + part.url + ' */\n' + text;
-      }catch(e){ return '/* gagal ambil: ' + part.url + ' */'; }
-    }));
+    store = { pages: data.pages, css: data.css, js: data.js, base: url };
+    activePageIdx = 0;
+    activeTab = 'html';
 
-    const jsResolved = await Promise.all(jsParts.map(async part => {
-      if(typeof part === 'string') return part;
-      try{
-        const text = await fetchViaProxy(part.url);
-        return '/* ' + part.url + ' */\n' + text;
-      }catch(e){ return '/* gagal ambil: ' + part.url + ' */'; }
-    }));
+    pageSelect.innerHTML = store.pages.map((p, i) => '<option value="' + i + '">' + pathLabel(p.url) + '</option>').join('');
+    pageSelect.value = '0';
 
-    store.css = cssResolved.join('\n\n');
-    store.js = jsResolved.join('\n\n');
+    countHtml.textContent = '(' + store.pages.length + ' halaman)';
+    countCss.textContent = data.cssCount ? '(' + data.cssCount + ' sumber)' : '';
+    countJs.textContent = data.jsCount ? '(' + data.jsCount + ' sumber)' : '';
 
-    countHtml.textContent = '(' + (store.html.split('\n').length) + ' baris)';
-    countCss.textContent = cssResolved.length ? '(' + cssResolved.length + ' sumber)' : '';
-    countJs.textContent = jsResolved.length ? '(' + jsResolved.length + ' sumber)' : '';
+    pagesSummary.innerHTML = 'Berhasil merayapi <b>' + store.pages.length + '</b> halaman dari <b>' + new URL(url).hostname + '</b>' +
+      (data.pageErrors.length ? '. ' + data.pageErrors.length + ' halaman gagal diambil.' : '.');
 
     result.style.display = 'block';
-    activeTab = 'html';
     renderTab();
-    setStatus('Berhasil mengambil source dari ' + url, 'ok');
+
+    recordDomain(new URL(url).hostname);
+
+    let msg = 'Selesai: ' + store.pages.length + ' halaman diambil dari ' + url;
+    if(data.pageErrors.length) msg += '\n' + data.pageErrors.join('\n');
+    setStatus(msg, data.pageErrors.length ? '' : 'ok');
   }catch(err){
-    setStatus('Gagal semua proxy → ' + err.message, 'err');
+    setStatus('Gagal total → ' + err.message, 'err');
   }finally{
     btn.disabled = false;
     btn.textContent = 'Ambil Kode';
